@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/components/lib/utils";
 import React from "react";
 import { motion } from "framer-motion";
 
