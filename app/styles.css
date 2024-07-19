@@ -1,0 +1,6 @@
+.menuBlur {
+    border-color: #333333 !important;
+    background-color: #00000050 !important;
+    backdrop-filter: blur(10px);
+    border-radius: 10px !important;
+}
