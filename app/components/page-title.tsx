@@ -11,7 +11,7 @@ export function PageTitle({ children }: PageTitleProps) {
                 <h1 className="text-3xl lg:text-5xl font-bold align-text-bottom text-white absolute bottom-20">
                     {children}
                 </h1>
-                <div className="w-[40rem] absolute bottom-20">
+                <div className="w-[40rem] absolute bottom-10">
                     {/* Gradients */}
                     <div className="absolute inset-x-20 bottom-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
                     <div className="absolute inset-x-20 bottom-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
