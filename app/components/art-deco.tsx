@@ -2,7 +2,9 @@ import React from 'react';
 import { FlipWords } from './flip-words';
 
 export function FlipWordsArtDeco() {
-  const words = ['Game-Server', 'MMO', 'Anti-Cheat', 'Game-Chat', 'Community', 'Analytics', 'Machine-Learning', 'Monitoring', 'NPCs', 'AIs', 'Match-Making'];
+  const words = ['Game-Server', 'MMO', 'Anti-Cheat', 'Game-Chat', 'Authentication', 'Community', 'Analytics',
+    'Machine-Learning', 'Monitoring', 'NPCs', 'AIs', 'Match-Making', 'Economy', 'Physics', 'Achievements',
+    'Replay-System', 'Guilds'];
 
   return (
     <div className="h-[10rem] flex justify-center items-center px-4">
