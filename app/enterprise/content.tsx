@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { PageTitle } from '../components/page-title';
 import { EnterpriseCards } from '../components/enterprise-cards';
 import Newsletter from '../components/newsletter';
+import ContactEnterprise from '../components/contact-enterprise';
 
 const Grid = styled.div`
    display: grid;
@@ -45,8 +46,13 @@ export function Content() {
         multiplayer gaming experiences.
       </p>
 
-      <div className='pt-20'>
+      <div className='pt-20 pb-20'>
         <EnterpriseCards/>
+      </div>
+
+      <div className='pt-10 pb-10'>
+        <h1 className='text-5xl'>Join us today!</h1>
+        <ContactEnterprise/>
       </div>
 
     </TracingBeam>
