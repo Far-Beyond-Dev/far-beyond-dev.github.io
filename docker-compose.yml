@@ -2,14 +2,12 @@ version: '3.8'
 
 services:
   app:
-    image: node:18
-    container_name: Horizon-Website
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: >
-      sh -c "npm install && npm run build && npm run start"
+    build: .
+    container_name: horizon-website
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+    volumes:
+      - .:/app
+      - /app/node_modules
