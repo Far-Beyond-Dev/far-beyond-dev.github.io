@@ -57,7 +57,6 @@ export function Content() {
 
     </TracingBeam>
     <div className='pt-10'>
-      <Newsletter/>
     </div>
   </div>
   );

@@ -33,7 +33,7 @@ export function Content() {
       </p>
       <br></br>
 
-      <div class="flex justify-center items-center">
+      <div className="flex justify-center items-center">
         <div className='stack'>
           <img className='align-center' alt='server-image-transparent' src='/server.png'/>
           <p className='text-center text-gray-500'>Image: Fujitsu - MediaWiki</p>
@@ -67,7 +67,6 @@ export function Content() {
 
     </TracingBeam>
     <div className='pt-10'>
-      <Newsletter/>
     </div>
   </div>
   );

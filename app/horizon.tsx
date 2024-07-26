@@ -23,7 +23,9 @@ export function Content() {
         <Sparkles/>
 
         <h1 className='text-5xl'>What is Horizon?</h1>
-        <p>Horizon is a cutting-edge game server software designed to facilitate seamless interaction between your game clients through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or Hosts.</p>
+        <p>Horizon is a cutting-edge game server software designed to facilitate seamless interaction between your game
+          clients through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and
+          managing real-time communication between players and a limitless number of game servers or Hosts.</p>
         <br></br>
         <br></br>
         <br></br>
@@ -42,7 +44,6 @@ export function Content() {
       </div>
     </TracingBeam>
     <div className='pt-10'>
-        <Newsletter/>
     </div>
   </div>
   );
