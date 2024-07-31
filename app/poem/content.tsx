@@ -17,8 +17,8 @@ const Grid = styled.div`
 
 export function Content() {
   return (
-
   <div className='text-center'>
+
     <TracingBeam className="px-6">
       <PageTitle>A Brief Poem</PageTitle>
 

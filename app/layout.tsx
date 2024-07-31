@@ -18,6 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html className='dark' lang="en">
+      <head>
+        <meta name="robots" content="noindex, nofollow" />.
+      </head>
       <Navbar/>
       <body className='dark'>{children}</body>
     </html>
