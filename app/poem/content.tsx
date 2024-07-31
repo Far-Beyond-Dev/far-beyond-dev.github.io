@@ -22,7 +22,7 @@ export function Content() {
     <TracingBeam className="px-6">
       <PageTitle>A Brief Poem</PageTitle>
 
-      <p>'Twas the night before launch day, and all through the net,<br></br>
+      <p>&apos;Twas the night before launch day, and all through the net,<br></br>
     The servers were ready, the staging was set.<br></br>
     The engineers snoozed, snug in their chairs,<br></br>
     In hopes that Horizon would handle the flares.</p>
@@ -52,10 +52,10 @@ export function Content() {
     I whistled and shouted, and called them by name:</p>
     <br></br><br></br>
 
-    <p>"Now Enterprise! Now SubSystems! Now customizable flair!<br></br>
+    <p>&quot;Now Enterprise! Now SubSystems! Now customizable flair!<br></br>
     On Scalability! On Fault Tolerance! On performance so rare!<br></br>
     To the top of the charts! To the top of them all!<br></br>
-    Now code away! Code away! Code away all!"</p>
+    Now code away! Code away! Code away all!&quot;</p>
     <br></br><br></br>
 
     <p>As packets that before the wild network fly,<br></br>
@@ -91,7 +91,7 @@ export function Content() {
     <p>It sprang to the cloud, to its team gave a whistle,<br></br>
     And away they all flew like the down of a missile.<br></br>
     But I heard it exclaim, ere it drove out of sight,<br></br>
-    "Happy gaming to all, and to all a good night!"</p>
+    &quot;Happy gaming to all, and to all a good night!&quot;</p>
       <br></br><br></br>
 
 
