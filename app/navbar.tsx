@@ -29,25 +29,25 @@ function Navbar({ className }: { className?: string }) {
           <ProductItem
               title="PebbleVault"
               href="https://github.com/Stars-Beyond/PebbleVault"
-              src="https://assets.aceternity.com/demos/algochurn.webp"
+              src="https://upload.wikimedia.org/wikipedia/commons/7/71/Black.png"
               description="PebbleVault is a high-performance database with spatial indexing"
             />
             <ProductItem
               title="TerraForge"
               href="https://github.com/Stars-Beyond/TerraForge"
-              src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
+              src="https://upload.wikimedia.org/wikipedia/commons/7/71/Black.png"
               description="Lightspeed terrain generation at scale"
             />
             <ProductItem
-              title="RecipieSmith"
-              href="https://gomoonbeam.com"
-              src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
+              title="RecipieSmith (WIP)"
+              href="https://github.com/Far-Beyond-Dev/RecipeSmith"
+              src="https://upload.wikimedia.org/wikipedia/commons/7/71/Black.png"
               description="Highly flexable and scalable crafting system using PebbleVault"
             />
             <ProductItem
-              title="SentientCore"
-              href="https://userogue.com"
-              src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
+              title="SentientCore (TODO)"
+              href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/issues/48"
+              src="https://upload.wikimedia.org/wikipedia/commons/7/71/Black.png"
               description="Highly advanced lightweight server-side AIs"
             />
             

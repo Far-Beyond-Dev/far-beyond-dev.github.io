@@ -17,12 +17,12 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "cobe": "^0.6.3",
-    "framer-motion": "^11.3.8",
+    "framer-motion": "^11.3.30",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
     "styled-components": "^6.1.12",
-    "tailwind-merge": "^2.4.0",
+    "tailwind-merge": "^2.5.2",
     "tsparticles": "^3.5.0"
   },
   "devDependencies": {

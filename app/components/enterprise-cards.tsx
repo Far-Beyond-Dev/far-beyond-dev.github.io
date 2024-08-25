@@ -19,11 +19,11 @@ export function EnterpriseCards() {
           </p>
         </div>
         <Image
-          src="https://ui.aceternity.com/linear.webp"
-          width={500}
-          height={500}
+          src="/dashboard/Horizon-Dashboard3.png"
+          width={450}
+          height={400}
           alt="linear demo image"
-          className="absolute -right-4 lg:-right-[40%] grayscale filter -bottom-10 object-contain rounded-2xl"
+          className="absolute -right-4 lg:-right-[40%] filter -bottom-10 object-contain rounded-2xl"
         />
       </WobbleCard>
       <WobbleCard containerClassName="col-span-1 min-h-[300px]">
@@ -52,9 +52,9 @@ export function EnterpriseCards() {
           </p>
         </div>
         <Image
-          src="https://ui.aceternity.com/linear.webp"
-          width={500}
-          height={500}
+          src="/dashboard/Horizon-Dashboard12.png"
+          width={550}
+          height={550}
           alt="linear demo image"
           className="absolute -right-10 md:-right-[40%] lg:-right-[20%] -bottom-10 object-contain rounded-2xl"
         />
