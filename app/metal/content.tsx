@@ -40,7 +40,7 @@ export function Content() {
       <section className="py-12">
         <h2 className="text-5xl font-extrabold mb-6">Why use Horizon Metal?</h2>
         <p className="text-lg text-gray-700 dark:text-gray-300">
-          Horizon Metal is perfect for companies who don't want to spend time troubleshooting their Horizon setups.
+          Horizon Metal is perfect for companies who don&apos;t want to spend time troubleshooting their Horizon setups.
           It is also useful if you want your hardware to be optimized specifically for your game. For example, one of your subsystems
           may use CUDA for a massively parallel set of tasks. We can figure out how to maximize players and minimize cost by running only
           the hardware you need in each physical server.

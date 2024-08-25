@@ -38,7 +38,7 @@ export function Content() {
             </p>
             <p>
               Enterprise-level customers benefit from dedicated support, ensuring seamless deployment,
-              optimal performance, and reliability across their game server infrastructure. Horizon's
+              optimal performance, and reliability across their game server infrastructure. Horizon&apos;s
               customizable synchronization parameters and centralized management simplify large-scale server
               operations, making it an ideal choice for enterprises seeking to deliver exceptional
               multiplayer gaming experiences.
@@ -103,7 +103,7 @@ export function Content() {
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-gray-100">Real-time Insights and Analytics</h3>
                   <p className="mt-2 text-base text-gray-400">
-                    Gain valuable insights into your system's performance with our comprehensive analytics. Monitor resource usage, track user activities, and make data-driven decisions to optimize your operations.
+                    Gain valuable insights into your system&apos;s performance with our comprehensive analytics. Monitor resource usage, track user activities, and make data-driven decisions to optimize your operations.
                   </p>
                 </div>
               </li>
