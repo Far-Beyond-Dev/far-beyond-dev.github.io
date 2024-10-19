@@ -12,23 +12,19 @@ export async function generateStaticParams() {
   }));
 }
 
-function processMarkdown(markdown: string): string {
+
+async function processMarkdown(markdown: string): Promise<string> {
     // Use marked to render the markdown to HTML
-    const htmlContent = marked.parse(markdown);
-    
-    if (typeof htmlContent === 'string') {
-      console.log('HTML content preview:', htmlContent.substring(0, 500) + '...');
-      return htmlContent;
-    } else {
-      throw new Error('Marked did not return a string as expected');
-    }
+    const htmlContent = await marked(markdown);
+    console.log('HTML content preview:', htmlContent.substring(0, 500) + '...');
+    return htmlContent;
   }
 
 async function getDocContent(slug: string) {
   const filePath = path.join(process.cwd(), 'docs', `${slug}.md`);
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const { content } = matter(fileContents);
-  const htmlContent = processMarkdown(content);
+  const htmlContent = await processMarkdown(content);
   return { content: htmlContent };
 }
 
