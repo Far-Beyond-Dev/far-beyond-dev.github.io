@@ -1,5 +1,10 @@
-# 🧪 Experimental Plugin API
+---
+title: 🧪 Experimental Plugin API
+image: 
+excerpt: The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments yet.
+---
 
+# 
 > [!WARNING]
 > The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments. It may undergo significant changes in future releases.
 
