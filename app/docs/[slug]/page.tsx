@@ -13,13 +13,16 @@ export async function generateStaticParams() {
 }
 
 function processMarkdown(markdown: string): string {
-  // Use marked to render the markdown to HTML
-  const htmlContent = marked(markdown);
-
-  console.log('HTML content preview:', htmlContent.substring(0, 500) + '...');
-
-  return htmlContent;
-}
+    // Use marked to render the markdown to HTML
+    const htmlContent = marked.parse(markdown);
+    
+    if (typeof htmlContent === 'string') {
+      console.log('HTML content preview:', htmlContent.substring(0, 500) + '...');
+      return htmlContent;
+    } else {
+      throw new Error('Marked did not return a string as expected');
+    }
+  }
 
 async function getDocContent(slug: string) {
   const filePath = path.join(process.cwd(), 'docs', `${slug}.md`);
