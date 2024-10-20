@@ -1,8 +1,10 @@
 ---
 title: About Horizon
-image: https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/raw/main/branding/horizon-server-high-resolution-logo-transparent.png
+image:
 excerpt: A brief introduction to Horizon
 ---
+
+# Getting started with Horizon
 
 ![horizon-server-high-resolution-logo-transparent](https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/raw/main/branding/horizon-server-high-resolution-logo-transparent.png)
 <center>

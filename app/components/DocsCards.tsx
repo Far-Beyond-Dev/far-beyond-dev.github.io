@@ -69,7 +69,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
 
   return (
     <>
-      <div className="mb-6">
+      <div className="mb-6 overflow-x-hidden">
         <input
           type="text"
           placeholder="Search documentation..."
@@ -90,7 +90,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
       </AnimatePresence>
       <AnimatePresence>
         {active && (
-          <div className="fixed inset-0 grid place-items-center z-[100]">
+          <div className="fixed inset-0 grid place-items-center z-[100] overflow-y-hidden">
             <motion.button
               key={`button-${active.slug}-${id}`}
               layout
@@ -108,7 +108,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
               className="w-full max-w-[800px] h-fit max-h-[90%] flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
             >
               {active.firstImage && (
-                <motion.div layoutId={`image-${active.slug}-${id}`} className="w-full h-60 relative">
+                <motion.div layoutId={`image-${active.slug}-${id}`} className="w-full overflow-x-hidden h-60 relative">
                   <Image
                     src={active.firstImage}
                     alt={active.title}
@@ -117,7 +117,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
                   />
                 </motion.div>
               )}
-              <div className="p-6 overflow-y-auto">
+              <div className="p-6 overflow-y-hidden">
                 <motion.h2
                   layoutId={`title-${active.slug}-${id}`}
                   className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-4"
@@ -133,11 +133,15 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
                   dangerouslySetInnerHTML={{ __html: renderExcerpt(active.content) }}
                 />
                 <div className="mt-4 flex justify-between items-center">
-                  <Link href={`/docs/${active.slug}`} className="inline-block text-blue-500 hover:underline">
-                    Read full article
-                  </Link>
                   <a href="https://discord.gg/NM4awJWGWu" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
                     Join Discord
+                  </a>
+                  <a 
+                    href={`/docs/${active.slug}`}
+                    className="px-4 py-2 text-sm rounded-full font-bold bg-gray-100 hover:bg-blue-500 hover:text-white text-black mt-4 md:mt-0 ml-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Read More
                   </a>
                 </div>
               </div>
