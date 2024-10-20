@@ -43,6 +43,7 @@
     margin: 0;
     font-size: 85%;
     background-color: rgba(27,31,35,0.05);
+    color: #d98031;
     border-radius: 3px;
   }
   
@@ -89,3 +90,25 @@
   .markdownContent h6 {
     scroll-margin-top: 100px; /* Adjust based on your header height */
   }
+
+  .rust-highlight {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1em;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.rust-highlight .keyword { color: #0000ff; font-weight: bold; }
+.rust-highlight .type { color: #267f99; }
+.rust-highlight .string { color: #a31515; }
+.rust-highlight .comment { color: #008000; font-style: italic; }
+.rust-highlight .number { color: #09885a; }
+.rust-highlight .macro { color: #af00db; }
+.rust-highlight .lifetime { color: #8c8c8c; }
+.rust-highlight .attribute { color: #d4d4d4; }
+.rust-highlight .function { color: #795e26; }
