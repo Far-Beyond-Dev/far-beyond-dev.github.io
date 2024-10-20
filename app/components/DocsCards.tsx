@@ -121,7 +121,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
   const filteredDocs = docs.filter((doc) =>
     (doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     doc.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (selectedTags.length === 0 || (doc.tags && selectedTags.every(tag => doc.tags.includes(tag)))) &&
+    (selectedTags.length === 0 || (doc.tags?.every(tag => selectedTags.includes(tag)))) &&
     (selectedStability === 'all' || (doc.stability && doc.stability === selectedStability))
   );
 
