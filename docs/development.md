@@ -1,3 +1,9 @@
+---
+title: Development - Getting started
+image:
+excerpt: A starting point to learn about developing for Horizon
+---
+
 # Developer Documentation - Overview
 
 ## 1. Overview
