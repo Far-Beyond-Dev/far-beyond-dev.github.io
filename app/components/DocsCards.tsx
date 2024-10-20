@@ -136,7 +136,7 @@ export function DocsCards({ docs }: { docs: DocFile[] }) {
                   <Link href={`/docs/${active.slug}`} className="inline-block text-blue-500 hover:underline">
                     Read full article
                   </Link>
-                  <a href="https://discord.gg/your-discord-invite-link" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+                  <a href="https://discord.gg/NM4awJWGWu" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
                     Join Discord
                   </a>
                 </div>
