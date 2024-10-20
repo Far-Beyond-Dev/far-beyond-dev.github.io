@@ -1,7 +1,9 @@
 ---
-title: Development - Getting started
+title: Getting started with Development
 image:
 excerpt: A starting point to learn about developing for Horizon
+tags: []
+stability: stable
 ---
 
 # Developer Documentation - Overview

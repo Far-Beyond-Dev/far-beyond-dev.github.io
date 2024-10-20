@@ -1,6 +1,8 @@
 ---
-title: 🧪 Experimental Plugin API
+title: Plugin API
 image: 
+tags: []
+stability: experimental
 excerpt: The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments yet.
 ---
 

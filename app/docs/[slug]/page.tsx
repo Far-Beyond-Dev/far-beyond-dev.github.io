@@ -31,7 +31,7 @@ async function getDocContent(slug: string) {
 export default async function DocPage({ params }: { params: { slug: string } }) {
   const { content } = await getDocContent(params.slug);
   return (
-    <div className="container mx-auto px-4 py-8 pt-32 max-w-[60%] content-center">
+    <div className="container mx-auto px-4 py-8 pt-32 max-w-[800px] content-center">
       <div className="w-full">
         <div
           className={styles.markdownContent}

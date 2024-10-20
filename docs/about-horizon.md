@@ -1,6 +1,8 @@
 ---
 title: About Horizon
 image:
+tags: []
+stability: stable
 excerpt: A brief introduction to Horizon
 ---
 
