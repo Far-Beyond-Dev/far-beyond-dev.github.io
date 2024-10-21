@@ -18,6 +18,7 @@ excerpt: The Plugin API is an experimental feature of Horizon and is not recomme
 - [🔧 Implementation](#implementation)
   - [RPC System](#rpc-system)
   - [Event Handling](#event-handling)
+  - [Logging System] (#logging)
 - [📈 Usage](#usage)
   - [Creating a Plugin](#creating-a-plugin)
   - [Registering a Plugin](#registering-a-plugin)
@@ -50,6 +51,15 @@ The API includes an event handling system that allows plugins to respond to vari
 
 - `GameEvent` enum: Represents different types of game events.
 - `BaseAPI` trait: Defines methods for handling game events and ticks.
+- `CustomEvent` struct: Handle event type and data for custom events.
+
+### Logging system
+
+The API has a logging system to provide a better debug and tracks the users actions for the specific plugin functionalities.
+
+#### Key Components
+
+- `GameEvent` enum: An robust logging system for `GameEvent` enum which notifies you about all events from the game.
 
 <h2 align="center" id='usage'> 📈 Usage </h2>
 
