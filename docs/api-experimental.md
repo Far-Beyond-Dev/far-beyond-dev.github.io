@@ -18,7 +18,7 @@ excerpt: The Plugin API is an experimental feature of Horizon and is not recomme
 - [🔧 Implementation](#implementation)
   - [RPC System](#rpc-system)
   - [Event Handling](#event-handling)
-  - [Logging System] (#logging)
+  - [Logging System](#logging-system)
 - [📈 Usage](#usage)
   - [Creating a Plugin](#creating-a-plugin)
   - [Registering a Plugin](#registering-a-plugin)
