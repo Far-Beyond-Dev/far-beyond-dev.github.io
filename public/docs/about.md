@@ -9,15 +9,6 @@ excerpt: A brief introduction to Horizon
 # Getting started with Horizon
 
 ![horizon-server-high-resolution-logo-transparent](https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/raw/main/branding/horizon-server-high-resolution-logo-transparent.png)
-<img src="https://github.com/Stars-Beyond/Horizon-Community-Edition/actions/workflows/rust.yml/badge.svg" alt="Build"/>
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FFar-Beyond-Dev%2FHorizon-Community-Edition&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false"/></a>
-<img src="https://img.shields.io/github/repo-size/Stars-Beyond/Horizon-Community-Edition" alt="Size"/>
-<img src="https://img.shields.io/website?url=https%3A%2F%2Fstars-beyond.com%2F" alt="Website"/>
-<img src="https://img.shields.io/github/license/Stars-Beyond/Horizon-Community-Edition" alt="GitHub License"/>
-<img src="https://img.shields.io/github/discussions/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Discussions"/>
-<img src="https://img.shields.io/github/sponsors/Far-Beyond-Dev" alt="GitHub Sponsors"/>
-<img src="https://img.shields.io/github/forks/Stars-Beyond/Horizon-Community-Edition" alt="GitHub forks"/>
-<img src="https://img.shields.io/github/stars/Stars-Beyond/Horizon-Community-Edition" alt="GitHub Repo stars"/>
 
 # Join Discord
 [Far Beyond LLC Discrord](https://discord.gg/NM4awJWGWu)
