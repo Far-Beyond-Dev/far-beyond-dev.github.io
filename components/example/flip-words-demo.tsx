@@ -14,8 +14,8 @@ export default function FlipWordsDemo() {
   return (
     <div className="pb-10 min-w-full flex justify-center items-center px-4">
       <div className="text-4xl min-w-full md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r p-5 from-blue-400 to-purple-400">
-        Run Your 
-        <FlipWords words={words} /> <br />
+        Run Your&nbsp;
+        <FlipWords words={words} />
         on Horizon
       </div>
     </div>
