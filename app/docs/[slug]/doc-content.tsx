@@ -80,7 +80,7 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
       <pre className={`${className} p-4 rounded-lg bg-neutral-950 overflow-x-auto`} {...props} />
     ),
     code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
-      <code className={`${className} px-1 py-0.5 rounded-md bg-neutral-950`} {...props} />
+      <code className={`${className} px-1 py-0.5 rounded-md text-orange-400 bg-neutral-950`} {...props} />
     ),
     h1: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
       <h1 className={`${className} text-3xl font-bold mt-8 mb-4`} {...props} />

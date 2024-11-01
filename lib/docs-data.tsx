@@ -9,38 +9,24 @@ export interface DocMetadata {
   
   export const docsData: DocMetadata[] = [
     {
-      title: "Getting Started",
-      excerpt: "Quick start guide for Pulsar Engine development",
+      title: "About Horizon",
+      excerpt: "Quick start guide for working with Horizon",
       tags: ["basics", "tutorial"],
       stability: "stable",
-      slug: "getting-started"
+      slug: "about"
     },
     {
-      title: "Component Architecture",
-      excerpt: "Understanding Pulsar's component-based architecture",
-      tags: ["architecture", "core"],
+      title: "Contributor Intro",
+      excerpt: "A starting point to learn about developing for Horizon",
+      tags: ["basics", "contributor", "tutorial"],
       stability: "stable",
-      slug: "component-architecture"
+      slug: "dev-intro"
     },
     {
-      title: "Physics System",
-      excerpt: "Advanced physics simulation system with continuous collision detection",
-      tags: ["physics", "core"],
-      stability: "stable",
-      slug: "physics"
-    },
-    {
-      title: "Networking",
-      excerpt: "Real-time multiplayer networking and state synchronization",
-      tags: ["networking", "multiplayer"],
-      stability: "in-dev",
-      slug: "networking"
-    },
-    {
-      title: "Asset Pipeline",
-      excerpt: "Working with assets and resource management",
-      tags: ["assets", "tools"],
+      title: "Plugin API",
+      excerpt: "The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments yet.",
+      tags: [],
       stability: "experimental",
-      slug: "asset-pipeline"
+      slug: "plugin-api"
     }
   ]
