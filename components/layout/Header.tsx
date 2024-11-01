@@ -53,7 +53,7 @@ export const Header = () => {
             >
               <IconBrandGithub className="w-5 h-5" />
             </a>
-            <a href='/DOCS/ABOUT'>
+            <a href='/docs/about'>
               <button className="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-neutral-100 rounded-lg transition-all">
                 Get Started
               </button>
