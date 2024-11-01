@@ -71,7 +71,7 @@ export default function Home() {
               />
             )}
           </div>
-          <div className="relative z-10 text-center px-4">
+          <div className="relative z-10 min-w-full text-center px-4">
             <Flipwords />            
             <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
               Horizon is a cutting-edge game server software designed to facilitate seamless interaction between your game clients through socket.io.
