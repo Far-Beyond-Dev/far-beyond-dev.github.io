@@ -32,7 +32,6 @@ excerpt: A brief introduction to Horizon
     - [Event Propagation and Multicasting](#event-propagation-and-multicasting)
     - [Coordinate Management and Region Mapping](#coordinate-management-and-region-mapping)
 
-</br>
 
 <h1 align="center" id='introduction'> 🚀 Introduction </h1>
 
@@ -124,5 +123,3 @@ Horizon uses a 64-bit floating-point coordinate system to manage server position
 ### Region Mapping
 
 Servers are organized into a grid-based region map, where each region corresponds to a specific set of spatial coordinates. This mapping enables efficient routing of events between servers, as servers can quickly determine which neighboring servers should receive specific events based on their region coordinates.
-
-</br>
