@@ -1,43 +1,25 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import { marked } from 'marked';
-import styles from './markdown-styles.module.css';
-
-export async function generateStaticParams() {
-  const docsDirectory = path.join(process.cwd(), 'docs');
-  const filenames = fs.readdirSync(docsDirectory);
-  return filenames.map((filename) => ({
-    slug: filename.replace('.md', ''),
-  }));
+import { docsData } from '@/lib/docs-data'
+import DocContent from './doc-content'
+  
+interface PageProps {
+    params: Promise<{ slug: string }>;  // Change to Promise type
 }
 
-
-async function processMarkdown(markdown: string): Promise<string> {
-    // Use marked to render the markdown to HTML
-    const htmlContent = await marked(markdown);
-    console.log('HTML content preview:', htmlContent.substring(0, 500) + '...');
-    return htmlContent;
-  }
-
-async function getDocContent(slug: string) {
-  const filePath = path.join(process.cwd(), 'docs', `${slug}.md`);
-  const fileContents = fs.readFileSync(filePath, 'utf8');
-  const { content } = matter(fileContents);
-  const htmlContent = await processMarkdown(content);
-  return { content: htmlContent };
+  
+export function generateStaticParams(): { slug: string }[] {
+    return docsData.map((doc) => ({
+      slug: doc.slug,
+    }))
 }
 
-export default async function DocPage({ params }: { params: { slug: string } }) {
-  const { content } = await getDocContent(params.slug);
-  return (
-    <div className="container mx-auto px-4 py-8 pt-32 max-w-[800px] content-center">
-      <div className="w-full">
-        <div
-          className={styles.markdownContent}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      </div>
-    </div>
-  );
+export default async function DocPage({ params }: PageProps) {
+    // Await the params to resolve the Promise
+    const resolvedParams = await params;
+    const doc = docsData.find((d) => d.slug === resolvedParams.slug);
+
+    if (!doc) {
+        return null; // or a 404 component
+    }
+
+    return <DocContent initialDoc={doc} slug={resolvedParams.slug} />;
 }
