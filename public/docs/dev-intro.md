@@ -2,7 +2,7 @@
 title: Getting started with Development
 image:
 excerpt: A starting point to learn about developing for Horizon
-tags: ["basics", "contributor", "tutorial"],
+tags: ["basics", "contributor", "tutorial"]
 stability: stable
 ---
 
