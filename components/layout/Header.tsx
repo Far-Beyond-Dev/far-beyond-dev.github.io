@@ -46,14 +46,14 @@ export const Header = () => {
           {/* Call to Action Buttons */}
           <div className="flex items-center gap-4">
             <a 
-              href="https://github.com/Far-Beyond-Pulsar/Pulsar-Engine" 
+              href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-neutral-300 hover:text-neutral-100 transition-colors"
             >
               <IconBrandGithub className="w-5 h-5" />
             </a>
-            <a href='https://github.com/Far-Beyond-Dev/Horizon-Community-Edition'>
+            <a href='/DOCS/ABOUT'>
               <button className="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-neutral-100 rounded-lg transition-all">
                 Get Started
               </button>

@@ -60,23 +60,23 @@ export const Footer = () => {
           <FooterSection 
             title="Community" 
             links={[
-              { href: "/discord", label: "Discord Server" },
-              { href: "/github", label: "GitHub Discussions" },
-              { href: "/contribute", label: "Contribute" },
-              { href: "/roadmap", label: "Roadmap" },
-              { href: "/releases", label: "Release Notes" }
+              { href: "https://discord.gg/NM4awJWGWu", label: "Discord Server" },
+              { href: "https://github.com/orgs/Far-Beyond-Dev/discussions", label: "GitHub Discussions" },
+              { href: "https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/compare", label: "Contribute" },
+              { href: "https://github.com/orgs/Far-Beyond-Dev/projects/8", label: "Roadmap" },
+              { href: "https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/releases", label: "Release Notes" }
             ]} 
           />
       
           {/* Company Section */}
           <FooterSection 
-            title="Company" 
+            title="Company (Links coming soon!)" 
             links={[
-              { href: "/about", label: "About" },
-              { href: "/careers", label: "Careers" },
-              { href: "/privacy", label: "Privacy Policy" },
-              { href: "/terms", label: "Terms of Service" },
-              { href: "/contact", label: "Contact" }
+              { href: "#about", label: "About" },
+              { href: "#careers", label: "Careers" },
+              { href: "#privacy", label: "Privacy Policy" },
+              { href: "#terms", label: "Terms of Service" },
+              { href: "#contact", label: "Contact" }
             ]} 
           />
         </div>
@@ -89,11 +89,11 @@ export const Footer = () => {
             </div>
             <FooterLove></FooterLove>
             <div className="flex gap-6 text-sm">
-              <FooterLink href="/status">Status</FooterLink>
+              <FooterLink href="https://www.githubstatus.com/">Status</FooterLink>
               <span className="text-neutral-700">•</span>
-              <FooterLink href="/support">Support</FooterLink>
+              <FooterLink href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/issues">Support</FooterLink>
               <span className="text-neutral-700">•</span>
-              <FooterLink href="/security">Security</FooterLink>
+              <FooterLink href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/security">Security</FooterLink>
             </div>
           </div>
         </div>

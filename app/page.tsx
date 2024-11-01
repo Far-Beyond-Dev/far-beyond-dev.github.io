@@ -77,12 +77,17 @@ export default function Home() {
               Horizon is a cutting-edge game server software designed to facilitate seamless interaction between your game clients through socket.io.
             </p>
             <div className="flex gap-4 justify-center">
-              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
-                Get Started <ArrowRight className="w-4 h-4" />
-              </button>
-              <button className="px-6 py-3 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
-                View Documentation <Code className="w-4 h-4" />
-              </button>
+              <a href="/docs/about">
+                <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
+                  Get Started <ArrowRight className="w-4 h-4" />
+                </button>
+              </a>
+
+              <a href="/docs">
+                <button className="px-6 py-3 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
+                  View Documentation <Code className="w-4 h-4" />
+                </button>
+              </a>
             </div>
           </div>
         </section>
@@ -148,12 +153,17 @@ export default function Home() {
                   Join thousands of developers building the next generation of multiplayer games with Horizon.
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
-                    Start Building <ArrowRight className="w-5 h-5" />
-                  </button>
-                  <button className="px-8 py-4 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
-                    Contact Sales <Users className="w-5 h-5" />
-                  </button>
+                  <a href="/docs/about">
+                    <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
+                      Start Building <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </a>
+
+                  <a href="mailto:admin@farbeyond.dev">
+                    <button className="px-8 py-4 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
+                      Contact Sales <Users className="w-5 h-5" />
+                    </button>
+                  </a>
                 </div>
               </div>
             </section>
