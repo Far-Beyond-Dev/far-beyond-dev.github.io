@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  //output: "export",
+  output: "export",
   webpack: (config) => {
     config.module.rules.push({
       test: /\.md$/,
