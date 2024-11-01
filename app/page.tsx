@@ -37,7 +37,7 @@ export default function Home() {
     },
     {
       title: "Scalable Architecture",
-      description: "Handle thousands of concurrent connections with ease",
+      description: "Handle infinite concurrent connections with multiple servers in a mesh",
       icon: <Database className="w-6 h-6 text-green-500" />
     },
     {
@@ -150,7 +150,6 @@ export default function Home() {
                   Ready to Get Started?
                 </h2>
                 <p className="text-gray-400 mb-8">
-                  Join thousands of developers building the next generation of multiplayer games with Horizon.
                 </p>
                 <div className="flex gap-4 justify-center">
                   <a href="/docs/about">
