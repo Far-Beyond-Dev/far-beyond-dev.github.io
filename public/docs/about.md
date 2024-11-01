@@ -24,7 +24,7 @@ excerpt: A brief introduction to Horizon
     - [Coordinate Management and Region Mapping](#coordinate-management-and-region-mapping)
 
 
-<h1 align="center" id='introduction'> 🚀 Introduction </h1>
+# 🚀 Introduction
 
 Horizon is a custom game server software designed to facilitate seamless interaction between Unreal Engine 5 (UE5) and client applications through socket.io. It provides a scalable and customizable solution for hosting multiplayer games and managing real-time communication between players and a limitless number of game servers or "Hosts".
 
