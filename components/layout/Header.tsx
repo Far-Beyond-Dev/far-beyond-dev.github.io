@@ -29,11 +29,11 @@ export const Header = () => {
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center gap-8">
 
-            <a href="/enterprise" className="text-neutral-300 hover:text-neutral-100 transition-colors">
-              Enterprise
-            </a>
             <a href="/community" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Community
+            </a>
+            <a href="/enterprise" className="text-neutral-300 hover:text-neutral-100 transition-colors">
+              Enterprise
             </a>
             <a href="/docs" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Documentation
@@ -76,10 +76,10 @@ export const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-black/95 backdrop-blur-lg">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <MobileNavLink href="#features">Features</MobileNavLink>
-            <MobileNavLink href="#docs">Documentation</MobileNavLink>
-            <MobileNavLink href="#community">Community</MobileNavLink>
-            <MobileNavLink href="#blog">Blog</MobileNavLink>
+            <MobileNavLink href="/community">Community</MobileNavLink>
+            <MobileNavLink href="/enterprise">Enterprise</MobileNavLink>
+            <MobileNavLink href="/docs">Documentation</MobileNavLink>
+            <MobileNavLink href="https://pulsar.farbeyond.dev/">Pulsar</MobileNavLink>
           </div>
         </div>
       )}
