@@ -216,7 +216,7 @@ const TestimonialCard = ({ quote, author, role, company }) => (
             </section>
 
             {/* Latest News Section */}
-            <section className="py-20 px-4 bg-[#060608]">
+            <section className="py-20 px-4">
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-12">
                   <h2 className="text-3xl font-bold">Latest News</h2>
