@@ -152,7 +152,7 @@ export default function Community() {
   const showcaseProjects = [
     {
       title: "Battle Royale Template",
-      author: "GameStudio",
+      author: "Far Beyond Community",
       description: "A complete battle royale game template built with Horizon",
       stars: 0,
       forks: 0,
@@ -160,7 +160,7 @@ export default function Community() {
     },
     {
       title: "MMO Starter Kit",
-      author: "MMODevs",
+      author: "Far Beyond Community",
       description: "Scalable MMO foundation with built-in features",
       stars: 0,
       forks: 0,
@@ -168,7 +168,7 @@ export default function Community() {
     },
     {
       title: "Real-time Strategy Framework",
-      author: "RTSEngine",
+      author: "Far Beyond Community",
       description: "Framework for building RTS games with Horizon",
       stars: 0,
       forks: 0,
