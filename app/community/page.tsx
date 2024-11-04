@@ -10,8 +10,9 @@ import {
   Coffee,
   GitFork,
   Video,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
+import Link from "next/link";
 
 // Utility function to format numbers
 const formatNumber = (num: number): string => {
@@ -153,22 +154,25 @@ export default function Community() {
       title: "Battle Royale Template",
       author: "GameStudio",
       description: "A complete battle royale game template built with Horizon",
-      stars: 1200,
-      forks: 280
+      stars: 0,
+      forks: 0,
+      link: "https://github.com/Far-Beyond-Dev/Battle-Royale-Template"
     },
     {
       title: "MMO Starter Kit",
       author: "MMODevs",
       description: "Scalable MMO foundation with built-in features",
-      stars: 850,
-      forks: 160
+      stars: 0,
+      forks: 0,
+      link: "https://github.com/Far-Beyond-Dev/MMO-Starter-Kit"
     },
     {
       title: "Real-time Strategy Framework",
       author: "RTSEngine",
       description: "Framework for building RTS games with Horizon",
-      stars: 620,
-      forks: 95
+      stars: 0,
+      forks: 0,
+      link: "https://github.com/Far-Beyond-Dev/Real-time-Strategy-Framework"
     }
   ];
 
@@ -305,21 +309,23 @@ export default function Community() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {showcaseProjects.map((project, index) => (
-              <Card key={index} className="p-6 transition-colors">
-                <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
-                <p className="text-gray-400 mb-4">by {project.author}</p>
-                <p className="text-gray-300 mb-6">{project.description}</p>
-                <div className="flex items-center gap-6 text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4" />
-                    <span>{project.stars}</span>
+              <Link href={project.link} target="_">
+                <Card key={index} className="p-6 transition-colors">
+                  <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
+                  <p className="text-gray-400 mb-4">by {project.author}</p>
+                  <p className="text-gray-300 mb-6">{project.description}</p>
+                  <div className="flex items-center gap-6 text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4" />
+                      <span>{project.stars}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <GitFork className="w-4 h-4" />
+                      <span>{project.forks}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <GitFork className="w-4 h-4" />
-                    <span>{project.forks}</span>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
