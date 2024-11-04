@@ -235,7 +235,7 @@ const TestimonialCard = ({ quote, author, role, company }) => (
 
             {/* Blog Section */}
             <section className="py-20">
-              <div className="max-w-7xl mx-auto px-4">
+              <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-12">
                   <h2 className="text-3xl font-bold">From Our Blog</h2>
                   <Link href="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
