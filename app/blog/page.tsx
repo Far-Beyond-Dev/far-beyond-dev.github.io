@@ -52,17 +52,17 @@ export default function BlogPage() {
                 Featured Post
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                The Future of Game Development
+                Building Terraforge
               </h1>
               <p className="text-lg text-neutral-300 max-w-2xl mb-6">
-                Explore the latest trends and technologies shaping the future of multiplayer game development.
+                Discover the journey of building TerraForge, a custom terrain generation engine for Horizon and Stars Beyond
               </p>
               <div className="flex items-center gap-4 text-neutral-400">
-                <span>Sarah Chen</span>
+                <span>Thiago Goulart</span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  8 min read
+                  35 min read
                 </span>
               </div>
             </div>
