@@ -4,19 +4,19 @@ import NewsContent from './news-content'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-interface PageProps {
-  params: { slug: string }
+type PageProps = {
+  params: { 
+    slug: string 
+  }
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export function generateMetadata({ params }: PageProps): Metadata {
   const news = newsData.find((n) => n.slug === params.slug)
   
   if (!news) {
-    return {
-      title: 'News Not Found'
-    }
+    return { title: 'News Not Found' }
   }
-
+  
   return {
     title: `${news.title} | Horizon News`,
     description: news.content,
@@ -29,33 +29,14 @@ export function generateStaticParams() {
   }))
 }
 
-export default async function NewsPage({ params }: PageProps) {
-  // Find the news item
+export default function NewsPage({ params }: PageProps) {
   const news = newsData.find((n) => n.slug === params.slug)
-
-  // If no news found, show 404
+  
   if (!news) {
     notFound()
   }
 
-  // Get the markdown content
-  let mdContent
-  try {
-    // Attempting to get markdown content if it exists
-    const response = await fetch(`/news/${params.slug}.md`)
-    if (response.ok) {
-      mdContent = await response.text()
-    }
-  } catch (error) {
-    console.error('Error loading markdown:', error)
-    // We'll continue without markdown content
-  }
-
-  // Combine the data
-  const combinedNews = {
-    ...news,
-    markdownContent: mdContent || '' // If no markdown, use empty string
-  }
-
-  return <NewsContent initialNews={combinedNews} slug={params.slug} />
+  // For static builds, markdown content should be imported directly 
+  // or included in the newsData rather than fetched
+  return <NewsContent initialNews={news} slug={params.slug} />
 }
