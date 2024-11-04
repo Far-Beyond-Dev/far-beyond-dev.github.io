@@ -7,6 +7,9 @@ import ConstructionOverlay from "./construction";
 import Flipwords from "@/components/example/flip-words-demo";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Code, Globe, Shield, Users, Database, Star, } from "lucide-react";
+import { newsData } from '@/lib/news-data';
+import { blogData } from "@/lib/blog-data";
+
 export default function Home() {
   const sparklesRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = React.useState(false);
@@ -30,7 +33,7 @@ export default function Home() {
 
 
   // Latest News Component
-const NewsCard = ({ date, title, description, tag }) => (
+const NewsCard = ({ slug, date, title, description, tag }) => (
   <Card className="p-6 hover:shadow-lg transition-shadow">
     <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
       <time>{date}</time>
@@ -40,14 +43,16 @@ const NewsCard = ({ date, title, description, tag }) => (
     </div>
     <h3 className="text-lg font-semibold mb-2">{title}</h3>
     <p className="text-gray-400 text-sm">{description}</p>
-    <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
-      Read more <ArrowRight className="w-4 h-4" />
-    </button>
+    <Link href={"/news/"+slug}>
+      <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
+        Read more  <ArrowRight className="w-4 h-4" />
+      </button>
+    </Link>
   </Card>
 );
 
 // Blog Preview Component
-const BlogCard = ({ title, author, readTime, description }) => (
+const BlogCard = ({ title, author, readingTime, excerpt }) => (
   <Card className="overflow-hidden hover:shadow-lg transition-shadow">
     <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20">
     </div>
@@ -55,10 +60,10 @@ const BlogCard = ({ title, author, readTime, description }) => (
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
         <span>{author}</span>
         <span>•</span>
-        <span>{readTime} min read</span>
+        <span>{readingTime} min read</span>
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-400 text-sm">{description}</p>
+      <p className="text-gray-400 text-sm">{excerpt}</p>
     </div>
   </Card>
 );
@@ -99,47 +104,9 @@ const TestimonialCard = ({ quote, author, role, company }) => (
     }
   ];
 
-  const latestNews = [
-    {
-      date: "March 28, 2024",
-      title: "Horizon 2.0 Release Candidate Now Available",
-      description: "Experience enhanced performance and new features with our latest release candidate.",
-      tag: "Release"
-    },
-    {
-      date: "March 25, 2024",
-      title: "New Documentation Portal Launch",
-      description: "We've completely revamped our documentation with interactive examples and improved search.",
-      tag: "Updates"
-    },
-    {
-      date: "March 20, 2024",
-      title: "Community Showcase: Building MMOs with Horizon",
-      description: "Learn how developers are using Horizon to create massive multiplayer experiences.",
-      tag: "Community"
-    }
-  ];
+  const latestNews = newsData;
 
-  const blogPosts = [
-    {
-      title: "Scaling Game Servers: Lessons Learned",
-      author: "Sarah Chen",
-      readTime: 8,
-      description: "Insights from scaling Horizon to handle millions of concurrent players."
-    },
-    {
-      title: "Optimizing Real-time Communication",
-      author: "Marcus Rodriguez",
-      readTime: 12,
-      description: "Deep dive into Socket.io implementation and performance optimization."
-    },
-    {
-      title: "Building Secure Game Architecture",
-      author: "Alex Thompson",
-      readTime: 10,
-      description: "Best practices for implementing security in multiplayer games."
-    }
-  ];
+  const blogPosts = blogData;
 
   const testimonials = [
     {
@@ -271,14 +238,14 @@ const TestimonialCard = ({ quote, author, role, company }) => (
                   </Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {blogPosts.map((post, index) => (
+                  {blogPosts.slice(0, 3).map((post, index) => (
                     <BlogCard key={index} {...post} />
                   ))}
                 </div>
               </div>
             </section>
 
-            {/* Testimonials Section */}
+            {/* Testimonials Section
             <section className="py-20 px-4">
               <div className="max-w-7xl mx-auto">
                 <h2 className="text-3xl font-bold text-center mb-12">What Developers Say</h2>
@@ -289,6 +256,7 @@ const TestimonialCard = ({ quote, author, role, company }) => (
                 </div>
               </div>
             </section>
+          */}
 
             {/* Code Demo Section */}
             <section className="py-20">
