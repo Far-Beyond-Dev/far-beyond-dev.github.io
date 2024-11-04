@@ -6,8 +6,10 @@ import TabsDemo from "@/components/blocks/code-tabs";
 import ConstructionOverlay from "./construction";
 import Flipwords from "@/components/example/flip-words-demo";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Code, Globe, Zap, Shield, Users, Database, Cpu, Network, Lock, Terminal, Cloud, Gauge } from "lucide-react";
-
+import { ArrowRight, Code, Globe, Zap, Shield, Users, Database, 
+  Cpu, Network, Lock, Terminal, Cloud, Gauge, BookOpen, 
+  Newspaper, MessageSquare, Star, 
+  Divide} from "lucide-react";
 export default function Home() {
   const sparklesRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = React.useState(false);
@@ -29,6 +31,53 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+
+  // Latest News Component
+const NewsCard = ({ date, title, description, tag }) => (
+  <Card className="p-6 hover:shadow-lg transition-shadow">
+    <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+      <time>{date}</time>
+      <span className="px-2 py-1 rounded-full text-xs bg-blue-500/10 text-blue-500">
+        {tag}
+      </span>
+    </div>
+    <h3 className="text-lg font-semibold mb-2">{title}</h3>
+    <p className="text-gray-400 text-sm">{description}</p>
+    <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
+      Read more <ArrowRight className="w-4 h-4" />
+    </button>
+  </Card>
+);
+
+// Blog Preview Component
+const BlogCard = ({ image, title, author, readTime, description }) => (
+  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20" />
+    <div className="p-6">
+      <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+        <span>{author}</span>
+        <span>•</span>
+        <span>{readTime} min read</span>
+      </div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-gray-400 text-sm">{description}</p>
+    </div>
+  </Card>
+);
+
+// Testimonial Component
+const TestimonialCard = ({ quote, author, role, company }) => (
+  <Card className="p-6">
+    <Star className="w-8 h-8 text-yellow-500 mb-4" />
+    <blockquote className="text-lg mb-4">{quote}</blockquote>
+    <div>
+      <div className="font-semibold">{author}</div>
+      <div className="text-sm text-gray-400">{role} at {company}</div>
+    </div>
+  </Card>
+);
+
+
   const features = [
     {
       title: "Real-time Communication",
@@ -49,6 +98,69 @@ export default function Home() {
       title: "Developer Friendly",
       description: "Comprehensive API and extensive documentation",
       icon: <Code className="w-6 h-6 text-yellow-500" />
+    }
+  ];
+
+  const latestNews = [
+    {
+      date: "March 28, 2024",
+      title: "Horizon 2.0 Release Candidate Now Available",
+      description: "Experience enhanced performance and new features with our latest release candidate.",
+      tag: "Release"
+    },
+    {
+      date: "March 25, 2024",
+      title: "New Documentation Portal Launch",
+      description: "We've completely revamped our documentation with interactive examples and improved search.",
+      tag: "Updates"
+    },
+    {
+      date: "March 20, 2024",
+      title: "Community Showcase: Building MMOs with Horizon",
+      description: "Learn how developers are using Horizon to create massive multiplayer experiences.",
+      tag: "Community"
+    }
+  ];
+
+  const blogPosts = [
+    {
+      title: "Scaling Game Servers: Lessons Learned",
+      author: "Sarah Chen",
+      readTime: 8,
+      description: "Insights from scaling Horizon to handle millions of concurrent players."
+    },
+    {
+      title: "Optimizing Real-time Communication",
+      author: "Marcus Rodriguez",
+      readTime: 12,
+      description: "Deep dive into Socket.io implementation and performance optimization."
+    },
+    {
+      title: "Building Secure Game Architecture",
+      author: "Alex Thompson",
+      readTime: 10,
+      description: "Best practices for implementing security in multiplayer games."
+    }
+  ];
+
+  const testimonials = [
+    {
+      quote: "Horizon has transformed how we handle multiplayer infrastructure. The performance gains and developer experience are unmatched.",
+      author: "Emma Watson",
+      role: "CTO",
+      company: "GameCraft Studios"
+    },
+    {
+      quote: "The plugin system is incredibly flexible, allowing us to customize everything while maintaining excellent performance.",
+      author: "David Park",
+      role: "Lead Engineer",
+      company: "Virtual Worlds Inc"
+    },
+    {
+      quote: "Supporting millions of players became manageable thanks to Horizon's scalable architecture.",
+      author: "Maria Garcia",
+      role: "Technical Director",
+      company: "MetaVerse Games"
     }
   ];
 
@@ -133,12 +245,62 @@ export default function Home() {
               </div>
             </section>
 
+            {/* Latest News Section */}
+            <section className="py-20 px-4 bg-[#060608]">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold">Latest News</h2>
+                  <a href="/news" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+                    View all news <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {latestNews.map((news, index) => (
+                    <NewsCard key={index} {...news} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+
+            {/* Blog Section */}
+            <section className="py-20 bg-[#060608]">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold">From Our Blog</h2>
+                  <a href="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+                    View all posts <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {blogPosts.map((post, index) => (
+                    <BlogCard key={index} {...post} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Testimonials Section */}
+            <section className="py-20 px-4">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold text-center mb-12">What Developers Say</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {testimonials.map((testimonial, index) => (
+                    <TestimonialCard key={index} {...testimonial} />
+                  ))}
+                </div>
+              </div>
+            </section>
+
             {/* Code Demo Section */}
             <section className="py-20">
               <div className="max-w-7xl mx-auto px-4">
                 <h2 className="text-3xl font-bold text-center text-white mb-12">
                   Simple to Implement
                 </h2>
+                <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-neutral-500 text-center font-normal dark:text-neutral-300">
+                  All major features of Horizon are implemented as plugins, making the entire codebase modular and flexable to your needs. Any game-specific functionality is also implemented in the form of a plugin on the server side defining custom events for your game client to call, and interacting with the other server plugins accordingly.
+                </p>
                 <TabsDemo />
               </div>
             </section>
