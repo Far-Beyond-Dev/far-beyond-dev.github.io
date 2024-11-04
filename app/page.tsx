@@ -52,7 +52,7 @@ const NewsCard = ({ slug, date, title, description, tag }) => (
 );
 
 // Blog Preview Component
-const BlogCard = ({ title, author, readingTime, excerpt }) => (
+const BlogCard = ({ slug, title, author, readingTime, excerpt }) => (
   <Card className="overflow-hidden hover:shadow-lg transition-shadow">
     <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20">
     </div>
@@ -64,6 +64,11 @@ const BlogCard = ({ title, author, readingTime, excerpt }) => (
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-gray-400 text-sm">{excerpt}</p>
+      <Link href={"/blog/"+slug}>
+      <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
+        Read more  <ArrowRight className="w-4 h-4" />
+      </button>
+      </Link>
     </div>
   </Card>
 );
