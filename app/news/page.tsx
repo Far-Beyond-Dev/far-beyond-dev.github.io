@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { newsData, type NewsItem } from '@/lib/news-data'
+import { newsData } from '@/lib/news-data'
 import { Search, X, Calendar, ArrowRight } from 'lucide-react'
 
 export default function NewsPage() {

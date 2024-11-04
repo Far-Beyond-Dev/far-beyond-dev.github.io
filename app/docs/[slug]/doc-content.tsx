@@ -44,7 +44,7 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
           throw new Error('Invalid doc format')
         }
 
-        const [_, frontmatter, content] = match
+        const [frontmatter, content] = match
         const metadata = parseYAML(frontmatter)
         
         const mdxSource = await serialize(content, {
@@ -194,19 +194,27 @@ function DocSkeleton() {
 
 function parseYAML(yaml: string): DocMetadata {
   const lines = yaml.trim().split('\n')
-  const result: Record<string, any> = {}
+  const result: Partial<DocMetadata> = {}
 
   for (const line of lines) {
     const [key, ...values] = line.split(':')
     if (key && values.length) {
       const value = values.join(':').trim()
-      if (value.startsWith('[') && value.endsWith(']')) {
-        result[key.trim()] = value
-          .slice(1, -1)
-          .split(',')
-          .map(item => item.trim())
-      } else {
-        result[key.trim()] = value
+      const trimmedKey = key.trim()
+
+      // Handle each key according to its expected type
+      if (trimmedKey === 'tags' && value.startsWith('[') && value.endsWith(']')) {
+        // Parse tags as an array of strings
+        result.tags = value.slice(1, -1).split(',').map(item => item.trim())
+      } else if (trimmedKey === 'stability') {
+        // Cast stability to the correct StabilityType
+        result.stability = value as StabilityType
+      } else if (trimmedKey === 'title') {
+        result.title = value
+      } else if (trimmedKey === 'excerpt') {
+        result.excerpt = value
+      } else if (trimmedKey === 'image') {
+        result.image = value
       }
     }
   }
@@ -215,7 +223,7 @@ function parseYAML(yaml: string): DocMetadata {
     title: result.title || '',
     image: result.image,
     tags: result.tags || [],
-    stability: (result.stability || 'experimental') as StabilityType,
+    stability: result.stability || 'experimental',
     excerpt: result.excerpt || ''
   }
 }

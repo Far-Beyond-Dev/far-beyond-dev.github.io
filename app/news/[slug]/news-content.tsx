@@ -5,8 +5,7 @@ import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import rehypePrism from 'rehype-prism-plus'
 import remarkGfm from 'remark-gfm'
-import { notFound } from 'next/navigation'
-import { Clock, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 
 interface NewsMetadata {
   id: string
@@ -25,7 +24,7 @@ interface NewsContentProps {
   slug: string
 }
 
-export default function NewsContent({ initialNews, slug }: NewsContentProps) {
+export default function NewsContent({ initialNews }: NewsContentProps) {
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 

@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { docsData, type DocMetadata } from '@/lib/docs-data'
+import { docsData } from '@/lib/docs-data'
 import { Search, X } from 'lucide-react'
 
 export default function DocsPage() {

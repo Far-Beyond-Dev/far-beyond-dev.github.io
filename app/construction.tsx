@@ -27,7 +27,7 @@ const ConstructionOverlay = ({ show = true }) => {
         </h2>
         
         <p className="text-neutral-300 mb-6">
-          We're working hard to bring you something amazing. The Pulsar Engine website is currently under development. Check back soon for updates!
+          We&apos;re working hard to bring you something amazing. The Pulsar Engine website is currently under development. Check back soon for updates!
         </p>
         
         <div className="flex justify-center gap-4">

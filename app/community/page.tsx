@@ -1,22 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { 
-  Github, 
-  Twitter, 
+  Github,  
   MessageCircle, 
   Users, 
   Star, 
   BookOpen,
-  Award,
   Coffee,
-  Heart,
-  Share2,
   GitFork,
-  MessageSquare,
   Video,
-  FileText,
-  Newspaper,
   ArrowRight
 } from "lucide-react";
 
@@ -51,12 +44,6 @@ export default function Community() {
         loading: true,
         error: null
     });
-
-  const communityLinks = [
-    { name: "GitHub", url: "#", icon: <Github className="w-5 h-5" /> },
-    { name: "Discord", url: "#", icon: <Star className="w-5 h-5" /> },
-    { name: "Twitter", url: "#", icon: <Twitter className="w-5 h-5" /> }
-  ];
 
   useEffect(() => {
     const fetchGitHubData = async () => {
@@ -345,7 +332,7 @@ export default function Community() {
             Start Contributing Today
           </h2>
           <p className="text-gray-300 mb-8">
-            Whether you're fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
+            Whether you&apos;re fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
           </p>
           <div className="flex justify-center gap-4">
             <a href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition">

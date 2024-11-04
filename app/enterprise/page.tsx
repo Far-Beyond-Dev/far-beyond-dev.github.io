@@ -8,7 +8,6 @@ import {
   Lock,
   Activity,
   Gauge,
-  MessageCircle,
   Boxes,
   RefreshCw,
   LineChart,

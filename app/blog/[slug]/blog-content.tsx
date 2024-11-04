@@ -16,7 +16,7 @@ interface BlogContentProps {
 
 export default function BlogContent({ initialPost, slug }: BlogContentProps) {
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null)
-  const [post, setPost] = useState<BlogPost | null>(initialPost)
+  const [post] = useState<BlogPost | null>(initialPost)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {

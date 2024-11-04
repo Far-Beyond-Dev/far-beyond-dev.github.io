@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Search, X, Clock, ArrowRight } from 'lucide-react'
-import { blogData, type BlogPost } from '@/lib/blog-data'
+import { blogData } from '@/lib/blog-data'
 
 export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -18,7 +18,7 @@ export default function BlogPage() {
   }, [])
 
   const filteredPosts = useMemo(() => {
-    let posts = blogData.filter(post => {
+    const posts = blogData.filter(post => {
       const matchesCategory = selectedCategory === 'all' || post.categories.includes(selectedCategory)
       const matchesSearch = searchQuery === '' || [
         post.title,

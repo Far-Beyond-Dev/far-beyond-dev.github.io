@@ -1,15 +1,12 @@
 "use client";
 import React, { useRef, useCallback } from "react";
+import Link from "next/link";
 import { SparklesCore } from "@/components/ui/sparkles";
-import BentoGridThirdDemo from "@/components/blocks/features-section-demo-3";
 import TabsDemo from "@/components/blocks/code-tabs";
 import ConstructionOverlay from "./construction";
 import Flipwords from "@/components/example/flip-words-demo";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Code, Globe, Zap, Shield, Users, Database, 
-  Cpu, Network, Lock, Terminal, Cloud, Gauge, BookOpen, 
-  Newspaper, MessageSquare, Star, 
-  Divide} from "lucide-react";
+import { ArrowRight, Code, Globe, Shield, Users, Database, Star, } from "lucide-react";
 export default function Home() {
   const sparklesRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = React.useState(false);
@@ -50,9 +47,10 @@ const NewsCard = ({ date, title, description, tag }) => (
 );
 
 // Blog Preview Component
-const BlogCard = ({ image, title, author, readTime, description }) => (
+const BlogCard = ({ title, author, readTime, description }) => (
   <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20" />
+    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+    </div>
     <div className="p-6">
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
         <span>{author}</span>
@@ -189,17 +187,17 @@ const TestimonialCard = ({ quote, author, role, company }) => (
               Horizon is a cutting-edge game server software designed to facilitate seamless interaction between your game clients through socket.io.
             </p>
             <div className="flex gap-4 justify-center">
-              <a href="/docs/about">
+              <Link href="/docs/about">
                 <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
                   Get Started <ArrowRight className="w-4 h-4" />
                 </button>
-              </a>
+              </Link>
 
-              <a href="/docs">
+              <Link href="/docs">
                 <button className="px-6 py-3 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
                   View Documentation <Code className="w-4 h-4" />
                 </button>
-              </a>
+              </Link>
             </div>
           </div>
         </section>
@@ -250,9 +248,9 @@ const TestimonialCard = ({ quote, author, role, company }) => (
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-12">
                   <h2 className="text-3xl font-bold">Latest News</h2>
-                  <a href="/news" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+                  <Link href="/news" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
                     View all news <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {latestNews.map((news, index) => (
@@ -268,9 +266,9 @@ const TestimonialCard = ({ quote, author, role, company }) => (
               <div className="max-w-7xl mx-auto px-4">
                 <div className="flex items-center justify-between mb-12">
                   <h2 className="text-3xl font-bold">From Our Blog</h2>
-                  <a href="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+                  <Link href="/blog" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
                     View all posts <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {blogPosts.map((post, index) => (
@@ -314,17 +312,17 @@ const TestimonialCard = ({ quote, author, role, company }) => (
                 <p className="text-gray-400 mb-8">
                 </p>
                 <div className="flex gap-4 justify-center">
-                  <a href="/docs/about">
+                  <Link href="/docs/about">
                     <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
                       Start Building <ArrowRight className="w-5 h-5" />
                     </button>
-                  </a>
+                  </Link>
 
-                  <a href="mailto:admin@farbeyond.dev">
+                  <Link href="mailto:admin@farbeyond.dev">
                     <button className="px-8 py-4 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
                       Contact Sales <Users className="w-5 h-5" />
                     </button>
-                  </a>
+                  </Link>
                 </div>
               </div>
             </section>

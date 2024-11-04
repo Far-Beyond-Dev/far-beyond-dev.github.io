@@ -1,50 +1,52 @@
 import { blogData } from '@/lib/blog-data'
 import BlogContent from './blog-content'
-  
+import { Metadata } from 'next'
+
+// Type for the dynamic segment parameters
 interface PageProps {
-    params: { slug: string }
+  params: {
+    slug: string
+  }
 }
 
-// This ensures all possible blog routes are generated at build time
+// Fix: Type the return value correctly
 export async function generateStaticParams() {
-    const paths = blogData.map((post) => ({
-        slug: post.slug,
-    }))
-    
-    return paths
+  return blogData.map((post) => ({
+    slug: post.slug,
+  }))
 }
 
-// Metadata generation for each blog post
-export async function generateMetadata({ params }: PageProps) {
-    const post = blogData.find((p) => p.slug === params.slug)
-    
-    if (!post) {
-        return {
-            title: 'Post Not Found',
-            description: 'The requested blog post could not be found.'
-        }
-    }
-
+export async function generateMetadata(
+  props: PageProps
+): Promise<Metadata> {
+  const post = blogData.find((p) => p.slug === props.params.slug)
+  if (!post) {
     return {
-        title: post.title,
-        description: post.excerpt,
-        authors: [{ name: post.author }],
-        openGraph: {
-            title: post.title,
-            description: post.excerpt,
-            type: 'article',
-            publishedTime: post.date,
-            authors: [post.author],
-        },
+      title: 'Post Not Found',
+      description: 'The requested blog post could not be found.',
     }
+  }
+  return {
+    title: post.title,
+    description: post.excerpt,
+    authors: [{ name: post.author }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      publishedTime: post.date,
+      authors: [post.author],
+    },
+  }
 }
 
-export default function BlogPage({ params }: PageProps) {
-    const post = blogData.find((p) => p.slug === params.slug)
-
-    if (!post) {
-        return null
-    }
-
-    return <BlogContent initialPost={post} slug={params.slug} />
+// Page component
+export default function BlogPage({
+  params,
+}: PageProps) {
+  const post = blogData.find((p) => p.slug === params.slug)
+  if (!post) {
+    return null
+  }
+  return <BlogContent initialPost={post} slug={params.slug} />
 }
