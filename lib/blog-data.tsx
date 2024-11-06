@@ -19,7 +19,7 @@ export type BlogPost = {
       categories: ['Engineering', 'Performance', 'Architecture'],
       excerpt: 'Discover the journey of building TerraForge, a custom terrain generation engine for Horizon and Stars Beyond',
       readingTime: 35
-    }
+    },
     {
       slug: 'horizon-rewrite',
       title: 'Horizon Core Rewrite',
@@ -27,6 +27,6 @@ export type BlogPost = {
       date: '2024-11-06',
       categories: ['Engineering', 'Performance', 'Architecture', 'Plugins'],
       excerpt: 'A technical deep-dive into the Horizon Core comprehensive rewrite',
-      readingTime: 45
+      readingTime: 50
     }
   ]

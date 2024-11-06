@@ -39,25 +39,23 @@ We started by mapping out our existing architecture's pain points:
    - Poor memory allocation patterns
    - Underutilized modern CPU features
 
+---
 
 ### Design Goals
 
-We established clear objectives for the rewrite:
 
-1. **Threading Model**
-   - Move from thread-per-subsystem to a task-based architecture
-   - Implement fine-grained locking
-   - Enable parallel execution of independent operations
+We established clear objectives for the rewrite that focused on three key areas. 
 
-2. **State Management**
-   - Separate concerns between core engine and plugins
-   - Implement proper state isolation
-   - Design for concurrent access
+#### Threading Rewrite
+Instead of dedicating entire threads to specific subsystems like physics or networking, we wanted to break work down into smaller tasks that could be executed wherever and whenever processing power was available. Think of it like changing from having specific workers dedicated to specific assembly lines, to having a pool of workers who can jump in and help wherever they're needed. This would let us better utilize our available processing power and handle more things simultaneously.
 
-3. **Resource Optimization**
-   - Efficient memory allocation strategies
-   - Better CPU utilization
-   - Reduced cache misses
+#### Smart State Management
+Originally, plugins had too much direct access to the engine's core systems, which made it hard to prevent conflicts and track down bugs. It was like having everyone share one workspace with no boundaries - chaotic and prone to accidents. We needed to give each plugin its own secure space to work in while still allowing them to communicate effectively with the core engine and each other.
+
+#### Hardware Optimization
+Modern processors are incredibly powerful, but they need data to be organized in specific ways to perform at their best. We needed to be smarter about how we store and access data in memory, ensure we're using all available CPU cores effectively, and minimize situations where the processor wastes time waiting for data to arrive from memory. This is similar to organizing a workshop so that every tool is in the right place and materials flow efficiently to where they're needed.
+
+---
 
 ### Technical Decisions
 
@@ -84,6 +82,8 @@ Several key technical decisions were made during the planning phase:
     - More flexible scaling
     - Reduced thread creation overhead
 
+---
+
 ### API Design Considerations
 
 We carefully planned the new API to be both powerful and ergonomic:
@@ -108,6 +108,9 @@ pub struct PluginContext {
     pub config: Arc<RwLock<HashMap<String, String>>>,
 }
 ```
+
+---
+
 
 ### Migration Strategy
 
@@ -166,6 +169,8 @@ We developed a phased migration plan:
    }
    ```
 
+---
+
 ## Core Architecture Changes
 
 ### Threading Model Overhaul
@@ -207,6 +212,8 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>,
 }
 ```
 
+---
+
 ### Parallel Data Processing
 
 We introduced Rayon for parallel processing throughout the engine:
@@ -227,6 +234,8 @@ let players_with_locations_json: Vec<serde_json::Value> = players
     })
     .collect();
 ```
+
+---
 
 ## Plugin System Rewrite
 
@@ -277,6 +286,8 @@ impl PluginManager {
     }
 }
 ```
+
+---
 
 ## Performance Optimizations
 
