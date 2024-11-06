@@ -27,6 +27,6 @@ export type BlogPost = {
       date: '2024-11-06',
       categories: ['Engineering', 'Performance', 'Architecture', 'Plugins'],
       excerpt: 'A technical deep-dive into the Horizon Core comprehensive rewrite',
-      readingTime: 50
+      readingTime: 35
     }
   ]
