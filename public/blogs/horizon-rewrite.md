@@ -25,7 +25,7 @@ We started by mapping out our existing architecture's pain points:
 ### Old Architecture Core Problems
 
 1. **Thread Contention**
-   - Mutex<Vec<Player>> causing blocking
+   - ``Mutex<Vec<Player>>`` causing blocking
    - Sequential world state updates
    - Plugin operations blocking core engine
 
