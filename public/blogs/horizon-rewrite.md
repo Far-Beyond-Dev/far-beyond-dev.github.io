@@ -1,4 +1,5 @@
-# Evolution of Horizon: Plugins, Threading, and Simplification
+
+[The pull request for this blog](https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/pull/182)
 
 # Introduction
 In this deep dive, we'll explore how the Horizon game server evolved from a monolithic single-threaded architecture to a modern, multi-threaded system. We'll examine both the plugin system transformation and the core server architecture changes.
@@ -432,4 +433,4 @@ impl HorizonServer {
 
 This transformation represents a fundamental shift in both our plugin architecture and core server design. By moving from a single-threaded design to a multi-threaded architecture, we've created a more scalable and maintainable, and efficient system.
 
-This rewrite wasn't just about improving individual components - it was about reimagining how a modern game server should handle concurrent operations and state management. By taking a holistic approach to both the core server and plugin architecture, we've created a more robust and scalable system that's ready for the demands of modern game development.
+This rewrite wasn't just about improving individual components - it was about reimagining how a modern game server should handle concurrent operations and state management. By taking a holistic approach to both the core engine and plugin architecture, we've created a more robust and scalable system that's ready for the demands of modern game development.
