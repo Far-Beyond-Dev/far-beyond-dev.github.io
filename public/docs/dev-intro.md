@@ -35,10 +35,10 @@ On Linux systems, the server uses the mimalloc allocator. This high-performance 
 
 ## 3. Server Architecture
 
-The server's architecture is modular and extensible, with its main entry point located in `main.rs`. This file is responsible for setting up the server, initializing various components, and beginning the listening process for incoming connections.
+The server's architecture is modular and extensible, with its main entry point located in `main`. This file is responsible for setting up the server, initializing various components, and beginning the listening process for incoming connections.
 
 ### 3.1 Main Function
-The `main` function in `main.rs` serves as the entry point for the server. It performs several crucial setup tasks:
+The `main` function in `main` serves as the entry point for the server. It performs several crucial setup tasks:
 
 1. Initializes the logging system using `tracing`.
 2. Sets up the socketioxide service for handling WebSocket connections.
@@ -46,24 +46,71 @@ The `main` function in `main.rs` serves as the entry point for the server. It pe
 4. Defines event handlers for various socket events (e.g., connection, disconnection).
 5. Creates and starts the HTTP server using the `viz` crate, which listens for incoming connections.
 
-### 3.2 Modular Structure
-The server's functionality is divided into several modules, each responsible for a specific aspect of the game server:
 
-- `players.rs`: Manages player data and interactions.
-- `chat.rs`: Handles in-game chat functionality.
-- `game_logic.rs`: Implements core game mechanics.
-- `leaderboard.rs`: Manages player rankings and scores.
-- `notifications.rs`: Handles system-wide notifications.
-- `plugin_manager.rs`: Manages the plugin system for extending server functionality.
+### 3.2 Modular Structure
+The server's functionality is divided into several Modules Now Becoming Plugins, each responsible for a specific aspect of the game server:
+
+- **`players`**: Manages player data and interactions.
+- **`chat`**: Handles in-game chat functionality.
+- **`game_logic`**: Implements core game mechanics.
+- **`plugin_manager`**: Manages the plugin system for extending server functionality.
+
+In the latest version, we are converting existing modules into plugins. This new plugin system requires a specific directory structure, ensuring modularity and ease of maintenance. Each plugin is now self-contained with its own subdirectory under the main `plugins` folder.
+
+#### Plugin Directory Structure & Setup Instructions:
+
+The main plugin directory is located at:
+
+```
+Horizon-Community-Edition\Horizon-Community-Edition\plugins
+```
+
+Each plugin is organized into its own subdirectory. Below is an example using a test plugin named `test_plugin_two`.
+
+##### Example Plugin Directory Structure:
+
+```
+Horizon-Community-Edition\Horizon-Community-Edition\plugins\test_plugin_two
+│
+├── Cargo.lock
+├── Cargo.toml
+│
+└── src
+    ├── lib.rs
+    └── structs
+```
+
+##### Breakdown:
+
+1. **Root Level (test_plugin_two)**:
+   - **Cargo.lock**: Lockfile containing resolved dependencies.
+   - **Cargo.toml**: Manifest file that defines package details and dependencies.
+
+2. **Source Directory (src)**:
+   - **lib.rs**: Main Rust library file containing the core logic for the plugin.
+   - **structs**: Subfolder containing loosely coupled components, such as data structures and logic specific to the plugin’s functionality.
+
+##### Notes:
+
+- The plugins are being transitioned from the old module system to a more efficient plugin structure. This means existing modules (`recipesmith`, `terraforge`, `homestead`, `skillscript`, etc.) will need to be updated to align with the new format.
+- The database (`pebblevault`) is currently being updated by `toafo`. Code from there can be used as a reference for updating and creating new plugins.
+- Each plugin maintains its own isolated directory, ensuring modularity and maintainability.
+
+
+### 3.3 Planned Upcoming Plugins
+
+- `leaderboard`: Manages player rankings and scores.
+- `notifications`: Handles system-wide notifications.
+
 
 This modular approach allows for easier maintenance, testing, and extension of the server's capabilities.
 
 ## 4. Player Management
 
-Player management is a crucial aspect of the server, handled primarily by the module defined in `players.rs`. This module is responsible for managing the entire lifecycle of a player's interaction with the server.
+Player management is a crucial aspect of the server, handled primarily by the module defined in `players`. This module is responsible for managing the entire lifecycle of a player's interaction with the server.
 
 ### 4.1 Player Connection
-When a new player connects, the `on_connect` function in `main.rs` is called. This function performs several important tasks:
+When a new player connects, the `on_connect` function in `main` is called. This function performs several important tasks:
 
 1. Initializes a new `Player` struct with the connected socket and a unique ID.
 2. Adds the player to the shared `players` vector.
@@ -71,7 +118,7 @@ When a new player connects, the `on_connect` function in `main.rs` is called. Th
 4. Emits a series of events to the client to signal successful connection and authentication.
 
 ### 4.2 Player Data Structure
-The `Player` struct, defined in `horizon_data_types.rs`, contains all relevant information about a player:
+The `Player` struct, defined in `horizon_data_types`, contains all relevant information about a player:
 
 ```rust
 pub struct Player {
@@ -105,7 +152,7 @@ pub fn update_player_location(socket: SocketRef, data: Data<Value>, players: Arc
 This function parses the incoming JSON data, updates the player's state in the shared `players` vector, and optionally broadcasts the update to other players.
 
 ### 4.4 Player Disconnection
-When a player disconnects, the `on_disconnect` function in `players.rs` is called. This function removes the player from the active players list and performs any necessary cleanup:
+When a player disconnects, the `on_disconnect` function in `players` is called. This function removes the player from the active players list and performs any necessary cleanup:
 
 ```rust
 pub fn on_disconnect(socket: SocketRef, players: Arc<Mutex<Vec<Player>>>) {
@@ -260,7 +307,7 @@ pub enum GameEvent {
 This comprehensive enum allows the server to represent and handle a wide variety of game events in a type-safe manner.
 
 ### 7.2 Event Processing
-Game logic, handled in `game_logic.rs`, processes these events and applies the appropriate rules and mechanics. The `on_game_event` function is typically used to handle these events:
+Game logic, handled in `game_logic`, processes these events and applies the appropriate rules and mechanics. The `on_game_event` function is typically used to handle these events:
 
 ```rust
 async fn on_game_event(&self, event: &GameEvent) {
@@ -280,7 +327,7 @@ This event-driven approach allows for clear separation of concerns and makes it 
 
 ## 8. Plugin System
 
-The Horizon Game Server implements a plugin system to allow for easy extension of server functionality. This system is managed by the `plugin_manager.rs` module.
+The Horizon Game Server implements a plugin system to allow for easy extension of server functionality. This system is managed by the `plugin_manager` module.
 
 ### 8.1 Plugin Structure
 Plugins are implemented as dynamic libraries (`.dll`, `.so`, or `.dylib` files) that can be loaded at runtime. Each plugin must implement certain traits and expose specific functions:
@@ -341,7 +388,7 @@ Several environment variables can be used to configure the server:
 - `LLVM_CONFIG_PATH`: Specifies the path to the llvm-config executable.
 
 ### 9.2 Build Configuration
-The server uses a `build.rs` script for compile-time configuration. This script handles tasks such as:
+The server uses a `build` script for compile-time configuration. This script handles tasks such as:
 
 - Detecting the target operating system and architecture.
 - Finding and linking to the appropriate libraries (e.g., libclang).
@@ -368,7 +415,7 @@ This allows the server to adapt to different build environments and target platf
 Testing is an integral part of the Horizon Game Server's development process, ensuring reliability and performance across various scenarios.
 
 ### 10.1 Unit Testing
-Unit tests are implemented throughout the codebase, typically in dedicated test modules. These tests use the `#[cfg(test)]` attribute to ensure they're only compiled during testing:
+Unit tests are implemented throughout the codebase, typically in dedicated test Plugins. These tests use the `#[cfg(test)]` attribute to ensure they're only compiled during testing:
 
 ```rust
 #[cfg(test)]
@@ -402,7 +449,7 @@ lazy_static::lazy_static! {
 This mocking system allows developers to simulate various command execution scenarios during testing, ensuring robust handling of external command interactions.
 
 ### 10.3 Integration Testing
-Integration tests are implemented to verify the correct interaction between different modules of the server. These tests typically involve setting up a test server instance and simulating client connections and interactions:
+Integration tests are implemented to verify the correct interaction between different Plugins of the server. These tests typically involve setting up a test server instance and simulating client connections and interactions:
 
 ```rust
 #[tokio::test]
