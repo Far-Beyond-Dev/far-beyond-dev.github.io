@@ -1,320 +1,87 @@
----
-title: Plugin API
-image: 
-tags: []
-stability: experimental
-excerpt: The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments yet.
----
 
-# 
-> [!WARNING]
-> The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments. It may undergo significant changes in future releases.
+# Plugin-API
 
-![Experimental Feature](https://img.shields.io/badge/Status-Experimental-yellow)
-
+The easy and fast way to manage content. Let's take a closer look at the technical implementation of loading the plugins. 
 ## Table of Contents
 
-- [🚀 Introduction](#introduction)
-- [🔧 Implementation](#implementation)
-  - [RPC System](#rpc-system)
-  - [Event Handling](#event-handling)
-- [📈 Usage](#usage)
-  - [Creating a Plugin](#creating-a-plugin)
-  - [Registering a Plugin](#registering-a-plugin)
-- [💻 Development](#development)
-  - [Best Practices](#best-practices)
-  - [Known Limitations](#known-limitations)
-- [🐞 Troubleshooting](#troubleshooting)
+1. [Entrypoint](#entrypoint)
+2. [Overview of the Internal Loading Process](#loading-plugins)
+3. [Technical Implementation and Points of Failure](#technical-implementation-and-points-of-failure)
 
-<h2 align="center" id='introduction'> 🚀 Introduction </h2>
+# Entrypoint
 
-The Experimental Plugin API is a powerful new feature of Horizon that allows developers to extend the functionality of the server through custom plugins. This API leverages a Remote Procedure Call (RPC) system and event handling mechanism to provide a flexible and efficient way of adding new features to your Horizon server.
+When loading your plugins, Horizon will look at the `plugin-api` folder's `build.rs` script. This script runs at compile time to make your custom extensions accessible within Horizon. This entry point generates a `plugin_imports.rs` file, which acts as the interface for your extensions, pointing to and importing any valid plugins in the `/plugins` directory.
 
-<h2 align="center" id='implementation'> 🔧 Implementation </h2>
+# The import Process
 
-### RPC System
+The plugin-loading process begins in `build.rs`, which searches the parent directory for a `plugins` directory. Once located, it scans for **valid** [Cargo crates](https://doc.rust-lang.org/cargo/guide/project-layout.html). The script then queries the crate's name, version, and complete relative path. This information is used to update `Cargo.toml` by adding the detected plugins as dependencies. Finally, the script auto-generates the `plugin_imports.rs` file in `plugin-api/src`.
 
-The Plugin API utilizes an RPC (Remote Procedure Call) system to enable communication between the core server and plugins. This system allows plugins to register functions that can be called by the server or other plugins, providing a seamless way to extend server functionality.
+### File Layouts
 
-#### Key Components:
 
-- `RpcFunction`: A type alias for plugin-defined functions that can be called remotely.
-- `RpcPlugin` trait: Defines the interface for RPC-enabled plugins.
-- `RpcEnabledPlugin` struct: A concrete implementation of the `RpcPlugin` trait.
+**Before** loading the plugins:
 
-### Event Handling
-
-The API includes an event handling system that allows plugins to respond to various game events. This system uses a publisher-subscriber model, where plugins can register for specific event types and receive notifications when those events occur.
-
-#### Key Components:
-
-- `GameEvent` enum: Represents different types of game events.
-- `BaseAPI` trait: Defines methods for handling game events and ticks.
-
-<h2 align="center" id='usage'> 📈 Usage </h2>
-
-### Creating a Plugin
-
-To create a plugin using the Experimental Plugin API, follow these steps:
-
-1. Implement the `RpcPlugin` trait for your plugin struct.
-2. Define RPC functions that your plugin will expose.
-3. Implement the `BaseAPI` trait to handle game events and ticks.
-
-Example:
-
-```rust
-use plugin_api::{RpcPlugin, BaseAPI, GameEvent};
-
-struct MyPlugin {
-    // Plugin state
-}
-
-#[async_trait]
-impl RpcPlugin for MyPlugin {
-    // Implement required methods
-}
-
-#[async_trait]
-impl BaseAPI for MyPlugin {
-    async fn on_game_event(&self, event: &GameEvent) {
-        // Handle game events
-    }
-
-    async fn on_game_tick(&self, delta_time: f64) {
-        // Perform periodic tasks
-    }
-}
 ```
+plugin-api/
+├─ build.rs <-- Script responsible for scanning and loading plugins
+├─ src/
+plugins/
+├─ plugin_a/ <-- Must be a valid rust crate
+├─ plugin_b/
 
-### Registering a Plugin
-
-To register your plugin with the Horizon server:
-
-1. Create an instance of your plugin.
-2. Wrap it in an `Arc<RwLock<>>` for thread-safe sharing.
-3. Use the `PluginContext::register_rpc_plugin` method to register your plugin.
-
-Example:
-
-```rust
-let my_plugin = Arc::new(RwLock::new(MyPlugin::new()));
-context.register_rpc_plugin(my_plugin).await;
 ```
 
 
-<h2 align="center" id='examples'> 🎮 Examples </h2>
+**After** loading the plugins:
 
-To illustrate the power and flexibility of the Experimental Plugin API, let's create two plugins: a Calculator Plugin and a Game Plugin. These examples will demonstrate how plugins can interact with each other and how game-specific logic can be separated from the core Horizon server.
-
-> [!IMPORTANT]
-> In Horizon, all game-specific server logic is implemented as plugins. This design choice allows for easier updates to the core Horizon code without affecting game-specific functionality.
-
-### Calculator Plugin
-
-First, let's create a simple Calculator Plugin that provides basic arithmetic operations:
-
-```rust
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use async_trait::async_trait;
-use plugin_api::{RpcPlugin, RpcFunction, BaseAPI, GameEvent, PluginContext};
-
-struct CalculatorPlugin {
-    id: Uuid,
-    name: String,
-    rpc_functions: HashMap<String, RpcFunction>,
-}
-
-impl CalculatorPlugin {
-    fn new() -> Self {
-        let mut plugin = Self {
-            id: Uuid::new_v4(),
-            name: "CalculatorPlugin".to_string(),
-            rpc_functions: HashMap::new(),
-        };
-
-        plugin.register_rpc("add", Arc::new(CalculatorPlugin::add));
-        plugin.register_rpc("subtract", Arc::new(CalculatorPlugin::subtract));
-        plugin
-    }
-
-    fn add(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
-        if let Some((a, b)) = params.downcast_ref::<(f64, f64)>() {
-            Box::new(a + b)
-        } else {
-            Box::new(f64::NAN)
-        }
-    }
-
-    fn subtract(params: &(dyn Any + Send + Sync)) -> Box<dyn Any + Send + Sync> {
-        if let Some((a, b)) = params.downcast_ref::<(f64, f64)>() {
-            Box::new(a - b)
-        } else {
-            Box::new(f64::NAN)
-        }
-    }
-}
-
-#[async_trait]
-impl RpcPlugin for CalculatorPlugin {
-    // Implement required methods (get_id, get_name, register_rpc, call_rpc)
-}
-
-#[async_trait]
-impl BaseAPI for CalculatorPlugin {
-    async fn on_game_event(&self, _event: &GameEvent) {
-        // Calculator doesn't need to handle game events
-    }
-
-    async fn on_game_tick(&self, _delta_time: f64) {
-        // Calculator doesn't need periodic updates
-    }
-}
+```
+plugin-api/
+├─ build.rs <-- Script responsible for scanning and loading plugins
+├─ src/
+│  ├─ plugin_imports.rs <-- Auto-generated file containing plugin imports
+plugins/
+├─ plugin_a/
+├─ plugin_b/
 ```
 
-### Game Plugin
 
-Now, let's create a Game Plugin that uses the Calculator Plugin for some game logic:
+# Technical Implementation and Points of Failure
 
-```rust
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use async_trait::async_trait;
-use plugin_api::{RpcPlugin, RpcFunction, BaseAPI, GameEvent, PluginContext, Player};
+This section does not provide a comprehensive overview of the code but highlights the key operations and their implementations. Additionally, it will examine potential error scenarios that may arise.
 
-struct GamePlugin {
-    id: Uuid,
-    name: String,
-    rpc_functions: HashMap<String, RpcFunction>,
-    context: Arc<RwLock<PluginContext>>,
-}
-
-impl GamePlugin {
-    fn new(context: Arc<RwLock<PluginContext>>) -> Self {
-        let mut plugin = Self {
-            id: Uuid::new_v4(),
-            name: "GamePlugin".to_string(),
-            rpc_functions: HashMap::new(),
-            context,
-        };
-
-        plugin.register_rpc("calculate_damage", Arc::new(GamePlugin::calculate_damage));
-        plugin
-    }
-
-    async fn calculate_damage(params: &(dyn Any + Send + Sync), context: &PluginContext) -> Box<dyn Any + Send + Sync> {
-        if let Some((base_damage, armor)) = params.downcast_ref::<(f64, f64)>() {
-            // Use the Calculator Plugin to compute the final damage
-            if let Some(calculator_id) = context.get_rpc_plugin_id_by_name("CalculatorPlugin").await {
-                if let Some(result) = context.call_rpc_plugin(calculator_id, "subtract", &(*base_damage, *armor)).await {
-                    if let Some(final_damage) = result.downcast_ref::<f64>() {
-                        return Box::new(final_damage.max(0.0)); // Ensure damage is not negative
-                    }
-                }
-            }
-        }
-        Box::new(0.0) // Default to no damage if calculation fails
-    }
-}
-
-#[async_trait]
-impl RpcPlugin for GamePlugin {
-    // Implement required methods (get_id, get_name, register_rpc, call_rpc)
-}
-
-#[async_trait]
-impl BaseAPI for GamePlugin {
-    async fn on_game_event(&self, event: &GameEvent) {
-        match event {
-            GameEvent::DamageDealt { attacker, target, amount } => {
-                let context = self.context.read().await;
-                if let Some(result) = self.call_rpc("calculate_damage", &(*amount, target.armor)).await {
-                    if let Some(final_damage) = result.downcast_ref::<f64>() {
-                        println!("Player {} dealt {} damage to Player {}", attacker.id, final_damage, target.id);
-                        // Apply damage to target, update game state, etc.
-                    }
-                }
-            },
-            // Handle other game events...
-            _ => {}
-        }
-    }
-
-    async fn on_game_tick(&self, delta_time: f64) {
-        // Implement game logic that needs to run every tick
-        // For example: update positions, check for collisions, etc.
-    }
-}
-```
-
-### Registering and Using the Plugins
-
-To use these plugins in your Horizon server:
+## Plugin Discovery
 
 ```rust
-async fn setup_plugins(context: &mut PluginContext) {
-    // Register the Calculator Plugin
-    let calculator_plugin = Arc::new(RwLock::new(CalculatorPlugin::new()));
-    context.register_rpc_plugin(calculator_plugin.clone()).await;
-
-    // Register the Game Plugin
-    let game_plugin = Arc::new(RwLock::new(GamePlugin::new(Arc::new(RwLock::new(context.clone())))));
-    context.register_rpc_plugin(game_plugin.clone()).await;
-
-    // Register for game events
-    let base_api: Arc<dyn BaseAPI> = game_plugin;
-    context.register_for_custom_event("damage_dealt", base_api).await;
-}
+fn discover_plugins(plugins_dir: &Path) -> Vec<(String, String, String)>
 ```
 
-### Explanation
+This function scans the `../plugin` directory. As indicated by its signature, the function does not return explicit errors; instead, it produces a `Vec` that may be empty or partially populated in case of issues. When successful, it returns a tuple containing the `crate name`, `version`, and `folder_name`.
 
-In this example, we've created two plugins:
+### Potential Points of Failure
 
-1. **Calculator Plugin**: A utility plugin that provides basic arithmetic operations.
-2. **Game Plugin**: Implements game-specific logic, such as damage calculation.
+The function may produce partial results or an empty `Vec` under the following circumstances:
 
-The Game Plugin uses the Calculator Plugin to perform damage calculations, demonstrating how plugins can interact with each other. This modular approach allows for:
+- The `plugin` directory is missing or inaccessible due to read errors.
+- The final path component contains an invalid format (e.g., terminating with `...`).
+- An entry within the directory is not recognized as a valid Rust crate.
 
-- **Separation of Concerns**: Game logic is kept separate from utility functions and core server code.
-- **Reusability**: The Calculator Plugin could be used by multiple game plugins or even different games.
-- **Easier Maintenance**: Updates to the core Horizon server won't directly affect game-specific logic.
-- **Flexibility**: New game features can be added or modified without changing the core server code.
 
-By implementing all game-specific server logic as plugins, Horizon maintains a clear separation between its core functionality and game-specific features. This architecture allows developers to:
+>[!Note]
+>In this context, "failure" does not imply a program crash. The `plugin-api` may continue execution even if portions of the code encounter issues. Here, "failure" refers to any deviation from expected behaviour or incomplete processing.
 
-- Update the core Horizon code without breaking game functionality.
-- Develop and test game features independently of the core server.
-- Easily switch between different game modes or rulesets by loading different plugins.
-- Share common functionality (like the Calculator Plugin) across multiple projects.
+## Updating `Cargo.toml`
 
-<h2 align="center" id='development'> 💻 Development </h2>
+```rust
+fn update_cargo_toml(plugin_paths: &[(String, String, String)]) -> std::io::Result<()>
+```
 
-### Best Practices
+This function updates the `Cargo.toml` file within the current directory (i.e., `plugin-api`). The crate is responsible for automatically generating and maintaining the `Cargo.toml` file. The function is expected to fail only in cases of I/O-related errors, assuming no manual modifications have been made to the `Cargo.toml` file.
 
-- Keep plugin functionality modular and focused.
-- Use appropriate error handling and logging within your plugins.
-- Avoid blocking operations in event handlers and RPC functions.
-- Test your plugins thoroughly before deployment.
 
-### Known Limitations
+## Generating the `plugin_imports.rs` File
 
-- The API is still experimental and may change in future releases.
-- Complex inter-plugin dependencies may lead to performance issues.
-- There's currently no built-in versioning system for plugins.
+```rust
+fn generate_plugin_files(plugin_paths: &[(String, String, String)]) -> std::io::Result<()>
+```
 
-<h2 align="center" id='troubleshooting'> 🐞 Troubleshooting </h2>
-
-Common issues when working with the Experimental Plugin API:
-
-- **Plugin Not Loading**: Ensure that your plugin is correctly registered with the `PluginContext`.
-- **RPC Function Not Found**: Verify that the function name in `call_rpc` matches the registered name.
-- **Type Mismatch Errors**: Check that the types used in RPC function signatures match the actual data being passed.
-
-For more detailed troubleshooting and support, please refer to the [Horizon Troubleshooting Guide](troubleshooting.md) or join our community Discord server.
-
----
-
-> [!NOTE]
-> As this is an experimental feature, we encourage developers to provide feedback and report any issues they encounter while using the Plugin API. Your input is valuable in shaping the future of this feature!
+This function is responsible for ensuring the creation of the `plugin_imports.rs` file within the `./src/` directory. While `generate_plugin_files` itself does not directly handle code generation, it guarantees the existence of the `./src/`directory. The core task of code generation is delegated to the `generate_imports_file` callback function, which performs the detailed work of creating the necessary import content. This function is susceptible to failures only due to I/O-related issues, such as insufficient permissions or underlying file system errors.
