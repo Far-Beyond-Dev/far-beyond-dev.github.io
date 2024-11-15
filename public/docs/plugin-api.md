@@ -1,3 +1,10 @@
+---
+title: Horizon Plugin API
+image:
+excerpt: Learn how Horizon's plugin API works
+tags: ["basics", "tutorial", "Plugins"]
+stability: stable
+---
 
 # Plugin-API
 
