@@ -66,8 +66,8 @@ The function may produce partial results or an empty `Vec` under the following
 - An entry within the directory is not recognized as a valid Rust crate.
 
 
->[!Note]
->In this context, "failure" does not imply a program crash. The `plugin-api` may continue execution even if portions of the code encounter issues. Here, "failure" refers to any deviation from expected behaviour or incomplete processing.
+#### Note
+In this context, "failure" does not imply a program crash. The `plugin-api` may continue execution even if portions of the code encounter issues. Here, "failure" refers to any deviation from expected behaviour or incomplete processing.
 
 ## Updating `Cargo.toml`
 
