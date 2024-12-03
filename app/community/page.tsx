@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card } from '@/components/ui/card'
+import { Card } from '@/components/ui/card';
 import { 
-  Github,  
+  Github, 
   MessageCircle, 
   Users, 
   Star, 
@@ -11,24 +11,25 @@ import {
   GitFork,
   Video,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
-// Utility function to format numbers
+
 const formatNumber = (num: number): string => {
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k';
-  }
-  return num.toString();
+  return new Intl.NumberFormat('en-US', {
+    notation: num >= 10000 ? 'compact' : 'standard',
+    maximumFractionDigits: 1
+  }).format(num);
 };
 
 interface Contributor {
   login: string;
   avatar_url: string;
-  contributions: number;
   html_url: string;
+  total_lines: number;
 }
-  
+
 interface RepoStats {
   stars: number;
   forks: number;
@@ -37,66 +38,79 @@ interface RepoStats {
   error: string | null;
 }
 
+interface Resource {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  link: string;
+}
+
+interface Project {
+  title: string;
+  author: string;
+  description: string;
+  stars: number;
+  forks: number;
+  link: string;
+}
+
 export default function Community() {
-    const [repoStats, setRepoStats] = useState<RepoStats>({
-        stars: 0,
-        forks: 0,
-        contributors: [],
-        loading: true,
-        error: null
-    });
+  const [repoStats, setRepoStats] = useState<RepoStats>({
+    stars: 0,
+    forks: 0,
+    contributors: [],
+    loading: true,
+    error: null
+  });
 
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        // Replace with your actual repo details
         const owner = 'Far-Beyond-Dev';
         const repo = 'Horizon-Community-Edition';
-        
-        // Fetch repository data
-        const repoResponse = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}`,
-          {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-            }
-          }
-        );
-        
-        if (!repoResponse.ok) {
-          throw new Error('Failed to fetch repository data');
-        }
-        
-        const repoData = await repoResponse.json();
+        const headers = {
+          'Accept': 'application/vnd.github.v3+json',
+          ...(process.env.NEXT_PUBLIC_GITHUB_TOKEN && {
+            'Authorization': `token ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`
+          })
+        };
 
-        // Fetch contributors
-        const contributorsResponse = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/contributors?per_page=18`,
-          {
-            headers: {
-              'Accept': 'application/vnd.github.v3+json',
-            }
-          }
-        );
+        const [repoData, contributorsData, statsData] = await Promise.all([
+          fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repo data: ${r.status}`))),
+          
+          fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=18`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch contributors: ${r.status}`))),
+          
+          fetch(`https://api.github.com/repos/${owner}/${repo}/stats/contributors`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch stats: ${r.status}`)))
+        ]);
 
-        if (!contributorsResponse.ok) {
-          throw new Error('Failed to fetch contributors data');
-        }
+        const contributorsWithStats = contributorsData.map(contributor => {
+          const stats = Array.isArray(statsData) ? statsData.find(stat => stat.author.login === contributor.login) : null;
+          const totalLines = stats?.weeks.reduce((acc, week) => acc + week.a + week.d, 0) ?? 0;
 
-        const contributorsData = await contributorsResponse.json();
+          return {
+            login: contributor.login,
+            avatar_url: contributor.avatar_url,
+            html_url: contributor.html_url,
+            total_lines: totalLines
+          };
+        });
 
         setRepoStats({
           stars: repoData.stargazers_count,
           forks: repoData.forks_count,
-          contributors: contributorsData,
+          contributors: contributorsWithStats,
           loading: false,
           error: null
         });
       } catch (error) {
+        console.error('Error fetching GitHub data:', error);
         setRepoStats(prev => ({
           ...prev,
           loading: false,
-          error: error instanceof Error ? error.message : 'An error occurred'
+          error: error instanceof Error ? error.message : 'Failed to load community data'
         }));
       }
     };
@@ -122,7 +136,7 @@ export default function Community() {
     }
   ];
 
-  const resources = [
+  const resources: Resource[] = [
     {
       title: "Documentation",
       description: "Comprehensive guides and API references",
@@ -130,26 +144,14 @@ export default function Community() {
       link: "/docs"
     },
     {
-        title: "Coming Soon!",
-        description: "More resources are coming with the full release",
-        icon: <Video className="w-6 h-6 text-blue-400" />,
-        link: ""
-    },
-    // {
-    //   title: "Video Tutorials",
-    //   description: "Step-by-step video guides and walkthroughs",
-    //   icon: <Video className="w-6 h-6 text-green-400" />,
-    //   link: "#"
-    // },
-    // {
-    //   title: "Blog Posts",
-    //   description: "Latest updates, tips, and best practices",
-    //   icon: <FileText className="w-6 h-6 text-purple-400" />,
-    //   link: "#"
-    // }
+      title: "Coming Soon!",
+      description: "More resources are coming with the full release",
+      icon: <Video className="w-6 h-6 text-blue-400" />,
+      link: ""
+    }
   ];
 
-  const showcaseProjects = [
+  const showcaseProjects: Project[] = [
     {
       title: "Battle Royale Template",
       author: "Far Beyond Community",
@@ -178,12 +180,11 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Hero Section */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-black" />
-        <div className="relative max-w-7xl mx-auto px-4">
+        <div className="absolute inset-0 bg-gradient-to-b from-black to-gray-900" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Join the Horizon Community
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -193,9 +194,8 @@ export default function Community() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="py-16 bg-black">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="flex items-center justify-center">
@@ -203,8 +203,12 @@ export default function Community() {
                   <div className="flex justify-center mb-4 text-gray-400">
                     {stat.icon}
                   </div>
-                  <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                  <div className="text-gray-400">{stat.label}</div>
+                  <div className="text-3xl font-bold text-white mb-2">
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-400">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             ))}
@@ -212,108 +216,122 @@ export default function Community() {
         </div>
       </section>
 
-      {/* Resources Section */}
+      
+      <section className="py-20 bg-black" id="contributors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-white text-center mb-12">
+            Top Contributors
+          </h2>
+          
+          {repoStats.loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            </div>
+          ) : repoStats.error ? (
+            <div className="text-center text-red-500">
+              {repoStats.error}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {repoStats.contributors.map((contributor) => (
+                  <a 
+                    key={contributor.login}
+                    href={contributor.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
+                  >
+                    <Card className="p-6 transition-all duration-300 transform hover:-translate-y-1 hover:bg-gray-800/50">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={contributor.avatar_url}
+                          alt={contributor.login}
+                          className="w-12 h-12 rounded-full ring-2 ring-gray-800 group-hover:ring-blue-500 transition-all"
+                          loading="lazy"
+                        />
+                        <div>
+                          <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                            {contributor.login}
+                          </h3>
+                          <div className="mt-2 flex items-center gap-2 text-gray-400">
+                            <Coffee className="w-4 h-4" />
+                            <span>{formatNumber(contributor.total_lines)} lines changed</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+              
+              <div className="text-center mt-12">
+                <a
+                  href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/graphs/contributors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  View all contributors <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
       <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             Community Resources
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {resources.map((resource, index) => (
-              <a
+              <Link
                 key={index}
                 href={resource.link}
-                className="group block"
+                className={`block ${!resource.link && 'pointer-events-none'}`}
               >
-                <Card className="p-6 transition-colors">
+                <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
                   <div className="mb-4">
                     {resource.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-gray-300 transition-colors">
+                  <h3 className="text-xl font-semibold text-white mb-2">
                     {resource.title}
                   </h3>
-                  <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                  <p className="text-gray-400">
                     {resource.description}
                   </p>
                 </Card>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contributors Section */}
       <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">
-            Top Contributors
-          </h2>
-          {repoStats.loading ? (
-            <div className="flex justify-center items-center py-12">
-              
-            </div>
-          ) : repoStats.error ? (
-            <div className="text-center text-red-400 py-8">
-              {repoStats.error}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {repoStats.contributors.map((contributor) => (
-                <a 
-                  key={contributor.login}
-                  href={contributor.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block group"
-                >
-                  <Card className="p-6 transition-all duration-300 transform hover:-translate-y-1">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={contributor.avatar_url}
-                        alt={contributor.login}
-                        className="w-12 h-12 rounded-full ring-2 ring-gray-800 group-hover:ring-blue-500 transition-all"
-                      />
-                      <div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {contributor.login}
-                        </h3>
-                        <div className="mt-2 flex items-center gap-2 text-gray-400">
-                          <Coffee className="w-4 h-4" />
-                          <span>{contributor.contributions} contributions</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </a>
-              ))}
-            </div>
-          )}
-          <div className="text-center mt-12">
-            <a
-              href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/graphs/contributors"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              View all contributors <ArrowRight className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Project Showcase Section */}
-      <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             Community Showcase
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {showcaseProjects.map((project, index) => (
-              <Link href={project.link} target="_">
-                <Card key={index} className="p-6 transition-colors">
-                  <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
-                  <p className="text-gray-400 mb-4">by {project.author}</p>
-                  <p className="text-gray-300 mb-6">{project.description}</p>
+              <Link 
+                key={index}
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    {project.title}
+                  </h3>
+                  <p className="text-gray-400 mb-4">
+                    by {project.author}
+                  </p>
+                  <p className="text-gray-300 mb-6">
+                    {project.description}
+                  </p>
                   <div className="flex items-center gap-6 text-gray-400">
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4" />
@@ -331,22 +349,26 @@ export default function Community() {
         </div>
       </section>
 
-      {/* Call to Action */}
       <section className="py-20 bg-black">
-        <div className="max-w-4xl mx-auto text-center px-4">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white mb-6">
             Start Contributing Today
           </h2>
           <p className="text-gray-300 mb-8">
-            Whether you&apos;re fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
+            Whether you're fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
           </p>
-          <div className="flex justify-center gap-4">
-            <a href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition">
-                <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2">
-                  <Github className="w-5 h-5" /> View on GitHub
-                </button>
-            </a>
-            <button className="px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <a 
+                href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+              >
+                <Github className="w-5 h-5" /> View on GitHub
+              </a>
+            <button
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors"
+            >
               <MessageCircle className="w-5 h-5" /> Join Discussion
             </button>
           </div>
