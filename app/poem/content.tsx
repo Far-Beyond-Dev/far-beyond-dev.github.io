@@ -1,28 +1,14 @@
 "use client"
 import React from 'react';
-import { TracingBeam } from "../components/ui/tracing-beam";
-import styled from 'styled-components';
-import { PageTitle } from '../components/page-title';
-import { EnterpriseCards } from '../components/enterprise-cards';
-import Newsletter from '../components/newsletter';
-import ContactMetal from '../components/contact-metal';
 
-const Grid = styled.div`
-   display: grid;
-   max-width: 1150px;
-   grid-template-columns: repeat(3, 2fr);
-   column-gap: 15px;
-   row-gap: 15px;
-  `
 
 export function Content() {
   return (
   <div className='text-center'>
 
-    <TracingBeam className="px-6">
-      <PageTitle>A Brief Poem</PageTitle>
+  <h1>A Brief Poem</h1>
 
-      <p>&apos;Twas the night before launch day, and all through the net,<br></br>
+    <p>&apos;Twas the night before launch day, and all through the net,<br></br>
     The servers were ready, the staging was set.<br></br>
     The engineers snoozed, snug in their chairs,<br></br>
     In hopes that Horizon would handle the flares.</p>
@@ -95,7 +81,6 @@ export function Content() {
       <br></br><br></br>
 
 
-    </TracingBeam>
     <div className='pt-10'>
     </div>
   </div>
