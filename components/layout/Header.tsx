@@ -33,6 +33,9 @@ export const Header = () => {
             <Link href="/community" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Community
             </Link>
+            <Link href="/poem" className="text-neutral-300 hover:text-neutral-100 transition-colors">
+              Poem
+            </Link>
             <Link href="/enterprise" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Enterprise
             </Link>
