@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-
 const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('en-US', {
     notation: num >= 10000 ? 'compact' : 'standard',
@@ -54,6 +53,43 @@ interface Project {
   link: string;
 }
 
+const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = 3, delay = 1000) => {
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, { headers });
+      
+      // If we get a 202, the stats are being computed - wait and retry
+      if (response.status === 202) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      // If we get an empty array and it's not the final attempt, retry
+      if (Array.isArray(data) && data.length === 0 && attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      return data;
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxRetries - 1) {
+        throw lastError;
+      }
+      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt))); // Exponential backoff
+    }
+  }
+  
+  throw lastError;
+};
+
 export default function Community() {
   const [repoStats, setRepoStats] = useState<RepoStats>({
     stars: 0,
@@ -75,19 +111,51 @@ export default function Community() {
           })
         };
 
-        const [repoData, contributorsData, statsData] = await Promise.all([
+        // First fetch repo data and stats (stats might need retries)
+        const [repoData, statsData] = await Promise.all([
           fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers })
             .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repo data: ${r.status}`))),
           
-          fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=18`, { headers })
-            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch contributors: ${r.status}`))),
-          
-          fetch(`https://api.github.com/repos/${owner}/${repo}/stats/contributors`, { headers })
-            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch stats: ${r.status}`)))
+          fetchWithRetry(
+            `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+            headers,
+            3,
+            2000
+          ).catch(error => {
+            console.warn('Failed to fetch contributor stats:', error);
+            return [];
+          })
         ]);
 
-        const contributorsWithStats = contributorsData.map(contributor => {
-          const stats = Array.isArray(statsData) ? statsData.find(stat => stat.author.login === contributor.login) : null;
+        // Get unique list of contributors from stats
+        const contributorLogins = Array.isArray(statsData) 
+          ? statsData.map(stat => stat.author.login)
+          : [];
+
+        // Fetch detailed user info for each contributor
+        const contributorDetails = await Promise.all(
+          contributorLogins.map(async (login) => {
+            try {
+              const response = await fetch(`https://api.github.com/users/${login}`, { headers });
+              if (!response.ok) throw new Error(`Failed to fetch user data: ${response.status}`);
+              return response.json();
+            } catch (error) {
+              console.warn(`Failed to fetch details for ${login}:`, error);
+              // Return minimal user data if we can't get details
+              return {
+                login,
+                avatar_url: `https://github.com/${login}.png`,
+                html_url: `https://github.com/${login}`
+              };
+            }
+          })
+        );
+
+        // Create complete contributor objects with stats
+        const contributorsWithStats = contributorDetails.map(contributor => {
+          const stats = Array.isArray(statsData) 
+            ? statsData.find(stat => stat.author.login === contributor.login) 
+            : null;
           const totalLines = stats?.weeks.reduce((acc, week) => acc + week.a + week.d, 0) ?? 0;
 
           return {
@@ -98,10 +166,13 @@ export default function Community() {
           };
         });
 
+        // Sort contributors by total lines changed, if available
+        const sortedContributors = contributorsWithStats.sort((a, b) => b.total_lines - a.total_lines);
+
         setRepoStats({
           stars: repoData.stargazers_count,
           forks: repoData.forks_count,
-          contributors: contributorsWithStats,
+          contributors: sortedContributors,
           loading: false,
           error: null
         });
@@ -204,7 +275,11 @@ export default function Community() {
                     {stat.icon}
                   </div>
                   <div className="text-3xl font-bold text-white mb-2">
-                    {stat.value}
+                    {repoStats.loading ? (
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                    ) : (
+                      stat.value
+                    )}
                   </div>
                   <div className="text-gray-400">
                     {stat.label}
@@ -216,7 +291,6 @@ export default function Community() {
         </div>
       </section>
 
-      
       <section className="py-20 bg-black" id="contributors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
@@ -224,8 +298,9 @@ export default function Community() {
           </h2>
           
           {repoStats.loading ? (
-            <div className="flex justify-center items-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            <div className="flex flex-col justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+              <p className="text-gray-400">Loading contributor data...</p>
             </div>
           ) : repoStats.error ? (
             <div className="text-center text-red-500">
@@ -335,10 +410,6 @@ export default function Community() {
                   <div className="flex items-center gap-6 text-gray-400">
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4" />
-                      <span>{project.stars}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GitFork className="w-4 h-4" />
                       <span>{project.forks}</span>
                     </div>
                   </div>
@@ -359,15 +430,15 @@ export default function Community() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <a 
-                href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
-              >
-                <Github className="w-5 h-5" /> View on GitHub
-              </a>
+              href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+            >
+              <Github className="w-5 h-5" /> View on GitHub
+            </a>
             <button
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors"
             >
               <MessageCircle className="w-5 h-5" /> Join Discussion
             </button>
