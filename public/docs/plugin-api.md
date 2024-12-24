@@ -14,9 +14,9 @@ The Horizon Plugin System provides a flexible architecture for extending server 
 
 ## Core Concepts
 
-Plugins in Horizon serve as modular components that can interact with the game server's core systems. Each plugin is constructed with access to existing plugins, allowing for inter-plugin communication and dependency management. The plugin system uses thread-safe data structures and implements proper synchronization to handle concurrent access to shared resources.
+Plugins in Horizon serve as modular components that can interact with the game server's core systems. Each plugin is constructed with access to existing plugins, allowing for inter-plugin communication and dependency management.
 
-The PluginConstruct trait handles the initialization phase of plugins, providing methods for setup and structure definition. This trait ensures that plugins can safely initialize their state and declare any custom structures they introduce to the system. The plugin construction process includes state initialization, event handler registration, and setup of any necessary background processes.
+The PluginConstruct trait handles the initialization phase of plugins, providing shared methods for setup and structure definition. This trait ensures that plugins can safely initialize their state and declare any custom structures they introduce to the system. The plugin construction process includes state initialization, event handler registration, and setup of any necessary background processes.
 
 The PluginAPI trait defines the interface that plugins expose to the rest of the system. This includes standard methods for handling player connections, managing game state, and processing events. Plugins can extend this base functionality by implementing additional methods specific to their purpose while maintaining compatibility with the core system.
 
@@ -56,13 +56,8 @@ struct PluginState {
     data: String,
 }
 
-// Define the plugin
-pub struct GenericPlugin {
-    state: Arc<RwLock<PluginState>>,
-}
-
 // Constructor trait implementation
-impl PluginConstruct for GenericPlugin {
+impl PluginConstruct for Plugin {
     fn new(plugins: HashMap<String, (Pluginstate, Plugin)>) -> Plugin {
         let state = Arc::new(RwLock::new(PluginState {
             active: false,
@@ -73,12 +68,12 @@ impl PluginConstruct for GenericPlugin {
     }
 
     fn get_structs(&self) -> Vec<&str> {
-        vec!["GenericPlugin"]
+        vec!["Plugin"]
     }
 }
 
 // Plugin API implementation
-impl PluginAPI for GenericPlugin {
+impl PluginAPI for Plugin {
     fn player_joined(&self, socket: SocketRef, player: Arc<RwLock<Player>>) {
         let mut state = self.state.write();
         state.active = true;
@@ -96,22 +91,6 @@ fn setup_listeners(socket: SocketRef, player: Arc<RwLock<Player>>) {
 }
 ```
 
-Usage example:
-
-```rust
-// Initialize plugin system
-let mut plugins = HashMap::new();
-
-// Create plugin instance
-let generic_plugin = GenericPlugin::new(plugins);
-
-// Register plugin
-plugins.insert(
-    "generic_plugin".to_string(),
-    (Pluginstate::Active, generic_plugin)
-);
-```
-
 ## Future Development
 
-The Horizon Plugin System is designed to be extensible and maintainable. Future developments may include enhanced security features, improved performance optimizations, and additional plugin capabilities. The system's modular nature allows for easy updates and improvements while maintaining backwards compatibility with existing plugins.
+The Horizon Plugin System is designed to be extensible and maintainable. Future developments will include, among others integration with [Horizon Link](https://horizon.farbeyond.dev/docs/horizon-link) to allow for easy event handling from the client
