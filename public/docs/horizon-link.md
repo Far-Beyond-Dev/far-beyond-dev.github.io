@@ -14,7 +14,7 @@ Horizon link plugins are a special class of Horizon plugin designed to change ho
 <br></br>
 
 ## 2. Why?
-Horizon link plugins were developed as a method of putting amiddleman between players sending events and the server recieving them.
+Horizon link plugins were developed as a method of putting a middleman between players sending events and the server recieving them.
 <br></br>
 
 ### Without link plugins
