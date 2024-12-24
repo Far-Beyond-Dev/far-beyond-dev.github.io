@@ -1,14 +1,13 @@
-// app/docs/[slug]/doc-content.tsx
-
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
-import rehypePrism from 'rehype-prism-plus'
 import remarkGfm from 'remark-gfm'
 import { notFound } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
+// Types
 type StabilityType = 'stable' | 'in-dev' | 'experimental'
 
 interface DocMetadata {
@@ -20,28 +19,88 @@ interface DocMetadata {
 }
 
 interface DocContentProps {
-  initialDoc: { title: string, excerpt: string, stability: StabilityType, tags: string[], slug: string }
+  initialDoc: {
+    title: string
+    excerpt: string
+    stability: StabilityType
+    tags: string[]
+    slug: string
+  }
   slug: string
 }
 
+interface PrismWindow extends Window {
+  Prism: {
+    highlightAll: () => void
+    manual: boolean
+  }
+}
+
+declare global {
+  interface Window extends PrismWindow {}
+}
+
+// Components
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center py-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+)
+
+const StabilityBadge = memo(({ stability }: { stability: StabilityType }) => {
+  const colors = {
+    stable: "bg-green-500/10 text-green-500 border-green-500/20",
+    "in-dev": "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+    experimental: "bg-red-500/10 text-red-500 border-red-500/20"
+  } as const
+
+  return (
+    <span className={`px-2 py-1 text-xs rounded-md border ${colors[stability]}`}>
+      {stability}
+    </span>
+  )
+})
+
+// Main Component
 export default function DocContent({ initialDoc, slug }: DocContentProps) {
   const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null)
   const [metadata, setMetadata] = useState<DocMetadata | null>(initialDoc)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // Highlight code when content changes
   useEffect(() => {
-    async function loadDoc() {
+    if (mdxSource && window.Prism) {
       try {
+        window.Prism.highlightAll()
+      } catch (error) {
+        console.error('Failed to highlight code:', error)
+      }
+    }
+  }, [mdxSource])
+
+  // Load document content
+  useEffect(() => {
+    const loadDoc = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
         const response = await fetch(`/docs/${slug}.md`)
         if (!response.ok) {
-          throw new Error('Doc not found')
+          throw new Error(
+            response.status === 404 
+              ? 'Document not found'
+              : `Failed to load document (${response.status})`
+          )
         }
         
         const text = await response.text()
-        const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
+        const normalizedText = text.replace(/\r\n/g, '\n')
+        const match = normalizedText.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/)
         
         if (!match) {
-          throw new Error('Invalid doc format')
+          throw new Error('Invalid document format')
         }
 
         const [_, frontmatter, content] = match
@@ -50,15 +109,26 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
         const mdxSource = await serialize(content, {
           mdxOptions: {
             remarkPlugins: [remarkGfm],
-            rehypePlugins: [rehypePrism],
-          }
+            format: 'mdx'
+          },
+          parseFrontmatter: false,
         })
         
         setMetadata(metadata)
         setMdxSource(mdxSource)
+
+        // Highlight code after content is loaded
+        setTimeout(() => {
+          if (window.Prism) {
+            window.Prism.highlightAll()
+          }
+        }, 0)
       } catch (error) {
-        console.error('Failed to load doc:', error)
-        notFound()
+        console.error('Failed to load document:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load document')
+        if (error instanceof Error && error.message === 'Document not found') {
+          notFound()
+        }
       } finally {
         setIsLoading(false)
       }
@@ -67,21 +137,38 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
     loadDoc()
   }, [slug])
 
-  if (isLoading) {
-    return <DocSkeleton />
-  }
-
-  if (!metadata || !mdxSource) {
-    return notFound()
-  }
-
   const components = {
-    pre: ({ className, ...props }: React.HTMLAttributes<HTMLPreElement>) => (
-      <pre className={`${className} p-4 rounded-lg bg-neutral-950 overflow-x-auto`} {...props} />
-    ),
-    code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
-      <code className={`${className} px-1 py-0.5 rounded-md text-orange-400 bg-neutral-950`} {...props} />
-    ),
+    pre: ({ className, ...props }: React.HTMLAttributes<HTMLPreElement>) => {
+      const languageMatch = className?.match(/language-(\w+)/)
+      const language = languageMatch ? languageMatch[1] : ''
+      
+      return (
+        <div className="relative group">
+          {language && (
+            <div className="absolute right-4 top-2 px-2 py-1 text-xs font-mono text-neutral-400 bg-neutral-900/80 rounded-md opacity-75 group-hover:opacity-100 transition-opacity">
+              {language}
+            </div>
+          )}
+          <pre 
+            className={`${className} p-4 rounded-lg bg-neutral-950 overflow-x-auto`}
+            {...props} 
+          />
+        </div>
+      )
+    },
+    code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => {
+      const isInline = !className?.includes('language-')
+      return (
+        <code 
+          className={`${className} ${
+            isInline 
+              ? 'px-1 py-0.5 rounded-md text-orange-400 bg-neutral-950/50 font-mono text-sm' 
+              : 'block text-sm'
+          }`} 
+          {...props} 
+        />
+      )
+    },
     h1: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
       <h1 className={`${className} text-3xl font-bold mt-8 mb-4`} {...props} />
     ),
@@ -103,9 +190,17 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
     li: ({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
       <li className={`${className} ml-4`} {...props} />
     ),
-    a: ({ className, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-      <a className={`${className} text-blue-400 hover:text-blue-300 underline`} {...props} />
-    ),
+    a: ({ className, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+      const isExternal = href?.startsWith('http')
+      return (
+        <a 
+          className={`${className} text-blue-400 hover:text-blue-300 underline`}
+          href={href}
+          {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          {...props} 
+        />
+      )
+    },
     blockquote: ({ className, ...props }: React.HTMLAttributes<HTMLQuoteElement>) => (
       <blockquote className={`${className} border-l-4 border-neutral-700 pl-4 my-4 italic`} {...props} />
     ),
@@ -120,6 +215,18 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
     td: ({ className, ...props }: React.TdHTMLAttributes<HTMLTableDataCellElement>) => (
       <td className={`${className} border border-neutral-800 px-4 py-2`} {...props} />
     ),
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (error) {
+    return <div className="py-8 text-center text-red-500">{error}</div>
+  }
+
+  if (!metadata || !mdxSource) {
+    return notFound()
   }
 
   return (
@@ -159,62 +266,45 @@ export default function DocContent({ initialDoc, slug }: DocContentProps) {
   )
 }
 
-function StabilityBadge({ stability }: { stability: StabilityType }) {
-    const colors = {
-      stable: "bg-green-500/10 text-green-500 border-green-500/20",
-      "in-dev": "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      experimental: "bg-red-500/10 text-red-500 border-red-500/20"
-    } as const
-
-    return (
-      <span className={`px-2 py-1 text-xs rounded-md border ${colors[stability]}`}>
-        {stability}
-      </span>
-    )
-}
-
-function DocSkeleton() {
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="animate-pulse">
-          <div className="h-10 w-2/3 bg-neutral-800 rounded mb-4" />
-          <div className="h-6 w-24 bg-neutral-800 rounded mb-4" />
-          <div className="h-4 w-1/2 bg-neutral-800 rounded mb-8" />
-          <div className="space-y-4">
-            <div className="h-4 bg-neutral-800 rounded w-full" />
-            <div className="h-4 bg-neutral-800 rounded w-5/6" />
-            <div className="h-4 bg-neutral-800 rounded w-4/6" />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
+// YAML Parser
 function parseYAML(yaml: string): DocMetadata {
   const lines = yaml.trim().split('\n')
   const result: Record<string, any> = {}
 
   for (const line of lines) {
     const [key, ...values] = line.split(':')
-    if (key && values.length) {
+    const trimmedKey = key.trim()
+    
+    if (trimmedKey) {
       const value = values.join(':').trim()
+      
+      if (!value) {
+        result[trimmedKey] = undefined
+        continue
+      }
+      
+      if (value === '[]') {
+        result[trimmedKey] = []
+        continue
+      }
+      
       if (value.startsWith('[') && value.endsWith(']')) {
-        result[key.trim()] = value
+        result[trimmedKey] = value
           .slice(1, -1)
           .split(',')
           .map(item => item.trim())
-      } else {
-        result[key.trim()] = value
+          .filter(Boolean)
+        continue
       }
+      
+      result[trimmedKey] = value
     }
   }
 
   return {
     title: result.title || '',
     image: result.image,
-    tags: result.tags || [],
+    tags: Array.isArray(result.tags) ? result.tags : [],
     stability: (result.stability || 'experimental') as StabilityType,
     excerpt: result.excerpt || ''
   }

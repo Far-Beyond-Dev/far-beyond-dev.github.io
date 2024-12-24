@@ -28,5 +28,12 @@ export interface DocMetadata {
       tags: [],
       stability: "experimental",
       slug: "plugin-api"
+    },
+    {
+      title: "Horizon Link",
+      excerpt: "Horizon Link is an experimental feature of Horizon and is not recommended for use in production environments yet.",
+      tags: ["basics", "tutorial"],
+      stability: "experimental",
+      slug: "horizon-link"
     }
   ]
