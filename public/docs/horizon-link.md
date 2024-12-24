@@ -10,7 +10,7 @@ excerpt: A brief introduction to Horizon's link protocol and plugins
 <br></br>
 
 ## 1. What is a Horizon link plugin? 
-Horizon link plugins are a special class of Horizon plugin designed to change how all other pieces of code socket events effectivly acting as a socket middleware.
+Horizon link plugins are a special class of Horizon plugin designed to change how all other pieces of code register socket events effectivly acting as a socket middleware.
 <br></br>
 
 ## 2. Why?
