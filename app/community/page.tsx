@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Loader2,
   GitCommitHorizontal,
+  AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,6 +25,8 @@ const RETRY_DELAY = 45000; // 45 seconds
 const PER_PAGE = 100; // Max items per GitHub API request
 const INITIAL_RETRY_DELAY = 45000; // 45 seconds
 const MAX_RETRY_DELAY = 300000; // 5 minutes
+const CACHE_KEY = 'horizon-community-stats';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 interface Contributor {
   login: string;
@@ -39,6 +42,8 @@ interface RepoStats {
   totalCommits: number;
   loading: boolean;
   error: string | null;
+  lastUpdated?: number;
+  isStale?: boolean;
 }
 
 interface Resource {
@@ -61,6 +66,18 @@ interface GitHubRepo {
   name: string;
 }
 
+interface Week {
+  a: number;
+  d: number;
+}
+
+interface ContributorStats {
+  weeks: Week[];
+  author: {
+    login: string;
+  };
+}
+
 const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('en-US', {
     notation: num >= 10000 ? 'compact' : 'standard',
@@ -75,6 +92,43 @@ const getGitHubHeaders = (): HeadersInit => ({
   })
 });
 
+const loadCachedStats = (): RepoStats | null => {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const cached = window.localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsedStats = JSON.parse(cached);
+      const now = Date.now();
+      const isStale = now - parsedStats.lastUpdated > CACHE_DURATION;
+      return {
+        ...parsedStats,
+        isStale,
+        loading: false,
+        error: null
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to load cached stats:', error);
+  }
+  return null;
+};
+
+const saveStatsToCache = (stats: RepoStats) => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const statsToCache = {
+      ...stats,
+      lastUpdated: Date.now(),
+      loading: false,
+      error: null
+    };
+    window.localStorage.setItem(CACHE_KEY, JSON.stringify(statsToCache));
+  } catch (error) {
+    console.warn('Failed to cache stats:', error);
+  }
+};
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -108,9 +162,9 @@ const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = MA
       // If we get a 202 or empty data, wait and retry
       if (response.status === 202 || (Array.isArray(data) && data.length === 0)) {
         console.log(`Attempt ${attempt + 1}: Got ${response.status} status or empty data. Waiting ${currentDelay/1000}s...`);
-        onRetry(); // Trigger retry count update
+        onRetry();
         await sleep(currentDelay);
-        currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY); // Exponential backoff
+        currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY);
         continue;
       }
       
@@ -123,9 +177,9 @@ const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = MA
         throw lastError;
       }
       
-      onRetry(); // Trigger retry count update
+      onRetry();
       await sleep(currentDelay);
-      currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY); // Exponential backoff
+      currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY);
     }
   }
   
@@ -159,35 +213,68 @@ export default function Community() {
     loading: true,
     error: null
   });
-
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    // Try to load cached data on client-side mount
+    const cachedData = loadCachedStats();
+    if (cachedData) {
+      setRepoStats(cachedData);
+    }
+
     const fetchGitHubData = async () => {
       try {
         const headers = getGitHubHeaders();
-
-        // Fetch repo data, stats, and org repos in parallel
-        const [repoData, statsData, orgRepos] = await Promise.all([
-          // Main repo data
-          fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`, { headers })
-            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repo data: ${r.status}`))),
+        
+        // Fetch repo data with rate limit handling
+        const repoResponse = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`, { headers });
+        
+        if (repoResponse.status === 403) {
+          const rateLimitReset = Number(repoResponse.headers.get('x-ratelimit-reset'));
+          const waitTime = (rateLimitReset * 1000) - Date.now();
           
-          // Contributor stats (with retry)
-          fetchWithRetry(
-            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stats/contributors`,
-            headers,
-            MAX_RETRIES,
-            () => setRetryCount(prev => prev + 1)
-          ).catch(error => {
-            console.warn('Failed to fetch contributor stats:', error);
-            return [];
-          }),
+          // Load cached data if available
+          const cachedStats = loadCachedStats();
+          if (cachedStats) {
+            setRepoStats(prev => ({
+              ...cachedStats,
+              error: `Rate limit exceeded. Using cached data from ${new Date(cachedStats.lastUpdated!).toLocaleString()}. New data will be available in ${Math.ceil(waitTime / 60000)} minutes.`,
+              isStale: true
+            }));
+            return;
+          }
+          
+          throw new Error(`Rate limit exceeded. Please try again in ${Math.ceil(waitTime / 60000)} minutes.`);
+        }
 
-          // All org repos
-          fetch(`https://api.github.com/orgs/${GITHUB_OWNER}/repos?per_page=${PER_PAGE}`, { headers })
-            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch org repos: ${r.status}`)))
-        ]);
+        if (!repoResponse.ok) {
+          throw new Error(`Failed to fetch repo data: ${repoResponse.status}`);
+        }
+
+        const repoData = await repoResponse.json();
+
+        // Fetch contributor stats with retry
+        const statsData = await fetchWithRetry(
+          `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stats/contributors`,
+          headers,
+          MAX_RETRIES,
+          () => setRetryCount(prev => prev + 1)
+        ).catch(error => {
+          console.warn('Failed to fetch contributor stats:', error);
+          return [];
+        });
+
+        // Fetch org repos
+        const orgReposResponse = await fetch(
+          `https://api.github.com/orgs/${GITHUB_OWNER}/repos?per_page=${PER_PAGE}`,
+          { headers }
+        );
+
+        if (!orgReposResponse.ok) {
+          throw new Error(`Failed to fetch org repos: ${orgReposResponse.status}`);
+        }
+
+        const orgRepos = await orgReposResponse.json();
 
         // Count commits for all repos
         const commitCounts = await Promise.all(
@@ -220,19 +307,8 @@ export default function Community() {
 
         // Create complete contributor objects
         const contributorsWithStats = contributorDetails.map(contributor => {
-          const stats = Array.isArray(statsData) 
-            ? statsData.find(stat => stat.author.login === contributor.login) 
-            : null;
-            interface Week {
-            a: number;
-            d: number;
-            }
-
-            interface ContributorStats {
-            weeks: Week[];
-            }
-
-            const totalLines = (stats as ContributorStats | null)?.weeks.reduce((acc: number, week: Week) => acc + week.a + week.d, 0) ?? 0;
+          const stats = statsData.find((stat: ContributorStats) => stat.author.login === contributor.login);
+          const totalLines = stats?.weeks.reduce((acc: number, week: Week) => acc + week.a + week.d, 0) ?? 0;
 
           return {
             login: contributor.login,
@@ -245,21 +321,37 @@ export default function Community() {
         // Sort contributors by total lines changed
         const sortedContributors = contributorsWithStats.sort((a, b) => b.total_lines - a.total_lines);
 
-        setRepoStats({
+        const newStats = {
           stars: repoData.stargazers_count,
           forks: repoData.forks_count,
           contributors: sortedContributors,
           totalCommits,
           loading: false,
           error: null
-        });
+        };
+
+        // Save to cache and update state
+        saveStatsToCache(newStats);
+        setRepoStats(newStats);
+
       } catch (error) {
         console.error('Error fetching GitHub data:', error);
-        setRepoStats(prev => ({
-          ...prev,
-          loading: false,
-          error: error instanceof Error ? error.message : 'Failed to load community data'
-        }));
+        
+        // Try to load cached data on error
+        const cachedStats = loadCachedStats();
+        if (cachedStats) {
+          setRepoStats(prev => ({
+            ...cachedStats,
+            error: `Failed to fetch new data. Using cached data from ${new Date(cachedStats.lastUpdated!).toLocaleString()}.`,
+            isStale: true
+          }));
+        } else {
+          setRepoStats(prev => ({
+            ...prev,
+            loading: false,
+            error: error instanceof Error ? error.message : 'Failed to load community data'
+          }));
+        }
       }
     };
 
@@ -267,6 +359,7 @@ export default function Community() {
   }, [retryCount]);
 
   const totalLinesChanged = repoStats.contributors.reduce((acc, curr) => acc + curr.total_lines, 0);
+  
   const stats = [
     { 
       label: "GitHub Stars", 
@@ -406,16 +499,30 @@ export default function Community() {
         }
       `}</style>
 
+      {/* Stats Section */}
       <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {repoStats.isStale && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 text-yellow-400 bg-yellow-400/10 rounded-lg p-4">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                <span>{repoStats.error}</span>
+              </div>
+            </div>
+          )}
+
           {repoStats.loading && retryCount > 0 && (
             <div className="text-center text-gray-400 mb-8">
-              Fetching contributor data... Attempt {retryCount} of {MAX_RETRIES}
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Fetching contributor data... Attempt {retryCount} of {MAX_RETRIES}</span>
+              </div>
               <div className="mt-2 text-sm">
                 (Waiting {RETRY_DELAY/1000} seconds between attempts)
               </div>
             </div>
           )}
+
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="flex items-center justify-center">
@@ -440,6 +547,7 @@ export default function Community() {
         </div>
       </section>
 
+      {/* Contributors Section */}
       <section className="py-20 bg-black" id="contributors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
@@ -465,7 +573,7 @@ export default function Community() {
                 </Card>
               ))}
             </div>
-          ) : repoStats.error ? (
+          ) : repoStats.error && !repoStats.isStale ? (
             <div className="text-center text-red-500">
               <p className="mb-4">{repoStats.error}</p>
               <button
@@ -527,6 +635,7 @@ export default function Community() {
         </div>
       </section>
 
+      {/* Resources Section */}
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
@@ -556,6 +665,7 @@ export default function Community() {
         </div>
       </section>
 
+      {/* Showcase Section */}
       <section className="py-20 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
@@ -582,6 +692,10 @@ export default function Community() {
                   <div className="flex items-center gap-6 text-gray-400">
                     <div className="flex items-center gap-2">
                       <Star className="w-4 h-4" />
+                      <span>{project.stars}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <GitFork className="w-4 h-4" />
                       <span>{project.forks}</span>
                     </div>
                   </div>
@@ -592,6 +706,7 @@ export default function Community() {
         </div>
       </section>
 
+      {/* Call to Action Section */}
       <section className="py-20 bg-black">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white mb-6">
