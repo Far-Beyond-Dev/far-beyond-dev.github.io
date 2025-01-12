@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Card } from '@/components/ui/card';
 import { 
@@ -12,15 +13,17 @@ import {
   Video,
   ArrowRight,
   Loader2,
+  GitCommitHorizontal,
 } from "lucide-react";
 import Link from "next/link";
 
-const formatNumber = (num: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    notation: num >= 10000 ? 'compact' : 'standard',
-    maximumFractionDigits: 1
-  }).format(num);
-};
+const GITHUB_OWNER = 'Far-Beyond-Dev';
+const GITHUB_REPO = 'Horizon-Community-Edition';
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 45000; // 45 seconds
+const PER_PAGE = 100; // Max items per GitHub API request
+const INITIAL_RETRY_DELAY = 45000; // 45 seconds
+const MAX_RETRY_DELAY = 300000; // 5 minutes
 
 interface Contributor {
   login: string;
@@ -33,6 +36,7 @@ interface RepoStats {
   stars: number;
   forks: number;
   contributors: Contributor[];
+  totalCommits: number;
   loading: boolean;
   error: string | null;
 }
@@ -53,86 +57,150 @@ interface Project {
   link: string;
 }
 
-const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = 3, delay = 1000) => {
+interface GitHubRepo {
+  name: string;
+}
+
+const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    notation: num >= 10000 ? 'compact' : 'standard',
+    maximumFractionDigits: 1
+  }).format(num);
+};
+
+const getGitHubHeaders = (): HeadersInit => ({
+  'Accept': 'application/vnd.github.v3+json',
+  ...(process.env.NEXT_PUBLIC_GITHUB_TOKEN && {
+    'Authorization': `token ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`
+  })
+});
+
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = MAX_RETRIES, onRetry: () => void) => {
   let lastError;
+  let currentDelay = INITIAL_RETRY_DELAY;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, { headers });
       
-      // If we get a 202, the stats are being computed - wait and retry
-      if (response.status === 202) {
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
+      // Check for rate limit headers
+      const rateLimitRemaining = Number(response.headers.get('x-ratelimit-remaining'));
+      const rateLimitReset = Number(response.headers.get('x-ratelimit-reset'));
       
+      if (rateLimitRemaining === 0) {
+        const waitTime = (rateLimitReset * 1000) - Date.now();
+        if (waitTime > 0) {
+          console.log(`Rate limit exceeded. Waiting ${Math.ceil(waitTime / 1000)} seconds...`);
+          await sleep(waitTime);
+          continue;
+        }
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      // If we get an empty array and it's not the final attempt, retry
-      if (Array.isArray(data) && data.length === 0 && attempt < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // If we get a 202 or empty data, wait and retry
+      if (response.status === 202 || (Array.isArray(data) && data.length === 0)) {
+        console.log(`Attempt ${attempt + 1}: Got ${response.status} status or empty data. Waiting ${currentDelay/1000}s...`);
+        onRetry(); // Trigger retry count update
+        await sleep(currentDelay);
+        currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY); // Exponential backoff
         continue;
       }
       
       return data;
     } catch (error) {
+      console.warn(`Attempt ${attempt + 1} failed:`, error);
       lastError = error;
+      
       if (attempt === maxRetries - 1) {
         throw lastError;
       }
-      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt))); // Exponential backoff
+      
+      onRetry(); // Trigger retry count update
+      await sleep(currentDelay);
+      currentDelay = Math.min(currentDelay * 2, MAX_RETRY_DELAY); // Exponential backoff
     }
   }
   
   throw lastError;
 };
 
+async function getCommitCount(owner: string, repo: string, headers: HeadersInit): Promise<number> {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`, { headers });
+    const linkHeader = response.headers.get('link');
+    
+    if (linkHeader) {
+      const matches = linkHeader.match(/page=(\d+)>; rel="last"/);
+      return matches ? parseInt(matches[1]) : 0;
+    }
+    
+    const commits = await response.json();
+    return Array.isArray(commits) ? commits.length : 0;
+  } catch (error) {
+    console.warn(`Failed to fetch commits for ${repo}:`, error);
+    return 0;
+  }
+}
+
 export default function Community() {
   const [repoStats, setRepoStats] = useState<RepoStats>({
     stars: 0,
     forks: 0,
     contributors: [],
+    totalCommits: 0,
     loading: true,
     error: null
   });
 
+  const [retryCount, setRetryCount] = useState(0);
+
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        const owner = 'Far-Beyond-Dev';
-        const repo = 'Horizon-Community-Edition';
-        const headers = {
-          'Accept': 'application/vnd.github.v3+json',
-          ...(process.env.NEXT_PUBLIC_GITHUB_TOKEN && {
-            'Authorization': `token ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`
-          })
-        };
+        const headers = getGitHubHeaders();
 
-        // First fetch repo data and stats (stats might need retries)
-        const [repoData, statsData] = await Promise.all([
-          fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers })
+        // Fetch repo data, stats, and org repos in parallel
+        const [repoData, statsData, orgRepos] = await Promise.all([
+          // Main repo data
+          fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`, { headers })
             .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repo data: ${r.status}`))),
           
+          // Contributor stats (with retry)
           fetchWithRetry(
-            `https://api.github.com/repos/${owner}/${repo}/stats/contributors`,
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/stats/contributors`,
             headers,
-            3,
-            2000
+            MAX_RETRIES,
+            () => setRetryCount(prev => prev + 1)
           ).catch(error => {
             console.warn('Failed to fetch contributor stats:', error);
             return [];
-          })
+          }),
+
+          // All org repos
+          fetch(`https://api.github.com/orgs/${GITHUB_OWNER}/repos?per_page=${PER_PAGE}`, { headers })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch org repos: ${r.status}`)))
         ]);
 
-        // Get unique list of contributors from stats
+        // Count commits for all repos
+        const commitCounts = await Promise.all(
+          orgRepos.map((repo: GitHubRepo) => getCommitCount(GITHUB_OWNER, repo.name, headers))
+        );
+        const totalCommits = commitCounts.reduce((sum, count) => sum + count, 0);
+
+        // Process contributor data
         const contributorLogins = Array.isArray(statsData) 
           ? statsData.map(stat => stat.author.login)
           : [];
 
-        // Fetch detailed user info for each contributor
+        // Fetch detailed contributor info
         const contributorDetails = await Promise.all(
           contributorLogins.map(async (login) => {
             try {
@@ -141,7 +209,6 @@ export default function Community() {
               return response.json();
             } catch (error) {
               console.warn(`Failed to fetch details for ${login}:`, error);
-              // Return minimal user data if we can't get details
               return {
                 login,
                 avatar_url: `https://github.com/${login}.png`,
@@ -151,7 +218,7 @@ export default function Community() {
           })
         );
 
-        // Create complete contributor objects with stats
+        // Create complete contributor objects
         const contributorsWithStats = contributorDetails.map(contributor => {
           const stats = Array.isArray(statsData) 
             ? statsData.find(stat => stat.author.login === contributor.login) 
@@ -166,13 +233,14 @@ export default function Community() {
           };
         });
 
-        // Sort contributors by total lines changed, if available
+        // Sort contributors by total lines changed
         const sortedContributors = contributorsWithStats.sort((a, b) => b.total_lines - a.total_lines);
 
         setRepoStats({
           stars: repoData.stargazers_count,
           forks: repoData.forks_count,
           contributors: sortedContributors,
+          totalCommits,
           loading: false,
           error: null
         });
@@ -187,8 +255,9 @@ export default function Community() {
     };
 
     fetchGitHubData();
-  }, []);
+  }, [retryCount]);
 
+  const totalLinesChanged = repoStats.contributors.reduce((acc, curr) => acc + curr.total_lines, 0);
   const stats = [
     { 
       label: "GitHub Stars", 
@@ -201,9 +270,19 @@ export default function Community() {
       icon: <GitFork className="w-6 h-6" /> 
     },
     { 
+      label: "Total Commits", 
+      value: formatNumber(repoStats.totalCommits), 
+      icon: <GitCommitHorizontal className="w-6 h-6" /> 
+    },
+    { 
       label: "Contributors", 
       value: formatNumber(repoStats.contributors.length), 
       icon: <Users className="w-6 h-6" /> 
+    },
+    {
+      label: "Lines Changed",
+      value: formatNumber(totalLinesChanged),
+      icon: <GitCommitHorizontal className="w-6 h-6" />
     }
   ];
 
@@ -251,23 +330,84 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black to-gray-900" />
+      <section className="relative py-32 overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
+        
+        {/* Animated dot pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_50px_at_center,#ffffff08_98%,#3b82f620)] bg-[size:24px_24px]" />
+        
+        {/* Geometric lines */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `linear-gradient(to right, #ffffff05 1px, transparent 1px),
+                           linear-gradient(to bottom, #ffffff05 1px, transparent 1px)`,
+          backgroundSize: '44px 44px'
+        }} />
+
+        {/* Glowing orb effect */}
+        <div className="absolute left-1/4 -top-24 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-[128px] animate-pulse" />
+        <div className="absolute right-1/4 -top-32 w-96 h-96 bg-purple-500 rounded-full opacity-10 blur-[128px] animate-pulse delay-700" />
+
+        {/* Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <div className="relative text-center">
+            {/* Decorative elements */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+            
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
               Join the Horizon Community
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            
+            {/* Animated line */}
+            <div className="w-24 h-1 bg-blue-500/20 mx-auto mb-8 relative overflow-hidden">
+              <div className="absolute inset-0 bg-blue-500 animate-[shimmer_2s_infinite]" />
+            </div>
+            
+            <p className="text-xl text-gray-300/90 mb-8 max-w-2xl mx-auto leading-relaxed">
               Connect with developers, share your projects, and help shape the future of game server development.
             </p>
           </div>
         </div>
+
+        {/* Animated particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 bg-blue-500/20 rounded-full"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animation: `float ${10 + i * 5}s infinite linear`
+              }}
+            />
+          ))}
+        </div>
       </section>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%) }
+          100% { transform: translateX(100%) }
+        }
+        @keyframes float {
+          0% { transform: translate(0, 0) }
+          50% { transform: translate(100px, -100px) rotate(180deg) }
+          100% { transform: translate(0, 0) }
+        }
+      `}</style>
 
       <section className="py-16 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {repoStats.loading && retryCount > 0 && (
+            <div className="text-center text-gray-400 mb-8">
+              Fetching contributor data... Attempt {retryCount} of {MAX_RETRIES}
+              <div className="mt-2 text-sm">
+                (Waiting {RETRY_DELAY/1000} seconds between attempts)
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="flex items-center justify-center">
                 <div className="text-center">
@@ -295,16 +435,39 @@ export default function Community() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             Top Contributors
+            {repoStats.loading && (
+              <span className="block text-base font-normal text-gray-400 mt-2">
+                Loading data... Attempt {retryCount + 1}/{MAX_RETRIES}
+              </span>
+            )}
           </h2>
           
           {repoStats.loading ? (
-            <div className="flex flex-col justify-center items-center py-12">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
-              <p className="text-gray-400">Loading contributor data...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, index) => (
+                <Card key={index} className="p-6 transition-all duration-300">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-800 animate-pulse" />
+                    <div className="flex-1">
+                      <div className="h-5 bg-gray-800 rounded w-1/2 mb-2 animate-pulse" />
+                      <div className="h-4 bg-gray-800 rounded w-3/4 animate-pulse" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : repoStats.error ? (
             <div className="text-center text-red-500">
-              {repoStats.error}
+              <p className="mb-4">{repoStats.error}</p>
+              <button
+                onClick={() => {
+                  setRepoStats(prev => ({ ...prev, loading: true, error: null }));
+                  setRetryCount(0);
+                }}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
+              >
+                Retry Loading
+              </button>
             </div>
           ) : (
             <>
@@ -342,7 +505,7 @@ export default function Community() {
               
               <div className="text-center mt-12">
                 <a
-                  href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition/graphs/contributors"
+                  href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/graphs/contributors`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
@@ -430,7 +593,7 @@ export default function Community() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <a 
-              href="https://github.com/Far-Beyond-Dev/Horizon-Community-Edition"
+              href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
