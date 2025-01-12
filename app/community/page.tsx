@@ -147,7 +147,7 @@ const fetchWithRetry = async (url: string, headers: HeadersInit, maxRetries = MA
       if (rateLimitRemaining === 0) {
         const waitTime = (rateLimitReset * 1000) - Date.now();
         if (waitTime > 0) {
-          console.log(`Rate limit exceeded. Waiting ${Math.ceil(waitTime / 1000)} seconds...`);
+          console.log(`GitHub API rate limit exceeded. Waiting ${Math.ceil(waitTime / 1000)} seconds...`);
           await sleep(waitTime);
           continue;
         }
