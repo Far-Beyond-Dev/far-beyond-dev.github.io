@@ -223,7 +223,16 @@ export default function Community() {
           const stats = Array.isArray(statsData) 
             ? statsData.find(stat => stat.author.login === contributor.login) 
             : null;
-          const totalLines = stats?.weeks.reduce((acc, week) => acc + week.a + week.d, 0) ?? 0;
+            interface Week {
+            a: number;
+            d: number;
+            }
+
+            interface ContributorStats {
+            weeks: Week[];
+            }
+
+            const totalLines = (stats as ContributorStats | null)?.weeks.reduce((acc: number, week: Week) => acc + week.a + week.d, 0) ?? 0;
 
           return {
             login: contributor.login,
