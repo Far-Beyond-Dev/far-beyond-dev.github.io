@@ -23,10 +23,10 @@ export interface DocMetadata {
       slug: "dev-intro"
     },
     {
-      title: "Plugin API",
+      title: "Plugin Dev Guide",
       excerpt: "The Plugin API is an experimental feature of Horizon and is not recommended for use in production environments yet.",
       tags: [],
-      stability: "experimental",
+      stability: "stable",
       slug: "plugin-api"
     },
     {
