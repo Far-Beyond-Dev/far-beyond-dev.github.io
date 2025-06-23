@@ -28,5 +28,14 @@ export type BlogPost = {
       categories: ['Engineering', 'Performance', 'Architecture', 'Plugins'],
       excerpt: 'A technical deep-dive into the Horizon Core comprehensive rewrite',
       readingTime: 35
-    }
+    },
+    {
+      slug: 'plugin-rewrite',
+      title: "Horizon's event-driven plugin system",
+      author: 'Tristan Poland',
+      date: '2025-6-23',
+      categories: ['Engineering', 'Performance', 'Architecture', 'Plugins'],
+      excerpt: 'A technical deep-dive into Horizon’s brand new event-driven plugin system',
+      readingTime: 45
+    },
   ]
