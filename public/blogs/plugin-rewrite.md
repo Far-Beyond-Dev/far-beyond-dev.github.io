@@ -1,13 +1,3 @@
-# Horizon's Event-Driven Plugin System: From Complex Traits to Type-Safe Events
-
-*A comprehensive technical deep-dive into our complete plugin architecture transformation*
-
-**Author:** Tristan Poland  
-**Date:** December 2024  
-**Tags:** Engineering, Architecture, Plugins, Type Safety, Performance
-
----
-
 ## Introduction
 
 In our previous blog post, we explored how Horizon evolved from a monolithic single-threaded architecture to a modern, multi-threaded system. Today, we're diving deeper into what we consider our most significant architectural achievement: the complete transformation of our plugin system.
