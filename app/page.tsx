@@ -1,22 +1,48 @@
 "use client";
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState, useEffect } from "react";
 import Link from "next/link";
 import { SparklesCore } from "@/components/ui/sparkles";
 import TabsDemo from "@/components/blocks/code-tabs";
 import ConstructionOverlay from "./construction";
 import Flipwords from "@/components/example/flip-words-demo";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Code, Globe, Shield, Users, Database, Star, } from "lucide-react";
+import { ArrowRight, Code, Globe, Shield, Users, Database, Star, BookOpen, FileText, Calendar, Clock } from "lucide-react";
 import { newsData } from '@/lib/news-data';
-import { blogData } from "@/lib/blog-data";
 
 export default function Home() {
   const sparklesRef = useRef<HTMLDivElement | null>(null);
-  const [mounted, setMounted] = React.useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [docsData, setDocsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
+  }, []);
+
+  // Fetch blog and docs data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [blogResponse, docsResponse] = await Promise.all([
+          fetch('https://horizon.farbeyond.dev/blog/blog-index.json'),
+          fetch('https://horizon.farbeyond.dev/docs/blog-index.json')
+        ]);
+        
+        const blogData = await blogResponse.json();
+        const docsData = await docsResponse.json();
+        
+        setBlogPosts(blogData);
+        setDocsData(docsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleScroll = useCallback(() => {
@@ -31,60 +57,136 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Helper function to clean excerpt text
+  const cleanExcerpt = (excerpt) => {
+    return excerpt
+      .replace(/\n/g, ' ')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}/g, '')
+      .replace(/\[.*?\]\(.*?\)/g, '')
+      .trim()
+      .substring(0, 150) + (excerpt.length > 150 ? '...' : '');
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   // Latest News Component
-const NewsCard = ({ slug, date, title, description, tag }) => (
-  <Card className="p-6 hover:shadow-lg transition-shadow">
-    <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-      <time>{date}</time>
-      <span className="px-2 py-1 rounded-full text-xs bg-blue-500/10 text-blue-500">
-        {tag}
-      </span>
-    </div>
-    <h3 className="text-lg font-semibold mb-2">{title}</h3>
-    <p className="text-gray-400 text-sm">{description}</p>
-    <Link href={"/news/"+slug}>
-      <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
-        Read more  <ArrowRight className="w-4 h-4" />
-      </button>
-    </Link>
-  </Card>
-);
-
-// Blog Preview Component
-const BlogCard = ({ slug, title, author, readingTime, excerpt }) => (
-  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20">
-    </div>
-    <div className="p-6">
+  const NewsCard = ({ slug, date, title, description, tag }) => (
+    <Card className="p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-        <span>{author}</span>
-        <span>•</span>
-        <span>{readingTime} min read</span>
+        <Calendar className="w-4 h-4" />
+        <time>{date}</time>
+        <span className="px-2 py-1 rounded-full text-xs bg-blue-500/10 text-blue-500">
+          {tag}
+        </span>
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-400 text-sm">{excerpt}</p>
-      <Link href={"/blog/"+slug}>
-      <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
-        Read more  <ArrowRight className="w-4 h-4" />
-      </button>
+      <p className="text-gray-400 text-sm">{description}</p>
+      <Link href={"/news/"+slug}>
+        <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
+          Read more  <ArrowRight className="w-4 h-4" />
+        </button>
       </Link>
-    </div>
-  </Card>
-);
+    </Card>
+  );
 
-// Testimonial Component
-const TestimonialCard = ({ quote, author, role, company }) => (
-  <Card className="p-6">
-    <Star className="w-8 h-8 text-yellow-500 mb-4" />
-    <blockquote className="text-lg mb-4">{quote}</blockquote>
-    <div>
-      <div className="font-semibold">{author}</div>
-      <div className="text-sm text-gray-400">{role} at {company}</div>
-    </div>
-  </Card>
-);
+  // Blog Preview Component
+  const BlogCard = ({ slug, title, date, excerpt, readingTime, categories, tags }) => (
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="h-48 bg-gradient-to-br from-blue-500/20 to-purple-500/20 relative">
+        <div className="absolute top-4 left-4">
+          <span className="px-3 py-1 rounded-full text-xs bg-blue-500/20 text-blue-300 backdrop-blur-sm">
+            {categories?.[0] || 'Engineering'}
+          </span>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex flex-wrap gap-1">
+            {tags?.slice(0, 3).map((tag, index) => (
+              <span key={index} className="px-2 py-1 rounded text-xs bg-black/30 text-white backdrop-blur-sm">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+          <Calendar className="w-4 h-4" />
+          <span>{formatDate(date)}</span>
+          <span>•</span>
+          <Clock className="w-4 h-4" />
+          <span>{readingTime} min read</span>
+        </div>
+        <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
+        <p className="text-gray-400 text-sm">{cleanExcerpt(excerpt)}</p>
+        <Link href={"/blog/"+slug}>
+          <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
+            Read more  <ArrowRight className="w-4 h-4" />
+          </button>
+        </Link>
+      </div>
+    </Card>
+  );
 
+  // Documentation Card Component
+  const DocsCard = ({ slug, title, excerpt, readingTime, tags, stability }) => (
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="h-32 bg-gradient-to-br from-green-500/20 to-blue-500/20 relative">
+        <div className="absolute top-4 left-4">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-green-400" />
+            <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-300 backdrop-blur-sm">
+              {stability}
+            </span>
+          </div>
+        </div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex flex-wrap gap-1">
+            {tags?.slice(0, 3).map((tag, index) => (
+              <span key={index} className="px-2 py-1 rounded text-xs bg-black/30 text-white backdrop-blur-sm">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+          <BookOpen className="w-4 h-4" />
+          <span>Documentation</span>
+          <span>•</span>
+          <Clock className="w-4 h-4" />
+          <span>{readingTime} min read</span>
+        </div>
+        <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
+        <p className="text-gray-400 text-sm">{cleanExcerpt(excerpt)}</p>
+        <Link href={"/docs/"+slug}>
+          <button className="mt-4 flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors">
+            Read docs  <ArrowRight className="w-4 h-4" />
+          </button>
+        </Link>
+      </div>
+    </Card>
+  );
+
+  // Testimonial Component
+  const TestimonialCard = ({ quote, author, role, company }) => (
+    <Card className="p-6">
+      <Star className="w-8 h-8 text-yellow-500 mb-4" />
+      <blockquote className="text-lg mb-4">{quote}</blockquote>
+      <div>
+        <div className="font-semibold">{author}</div>
+        <div className="text-sm text-gray-400">{role} at {company}</div>
+      </div>
+    </Card>
+  );
 
   const features = [
     {
@@ -110,8 +212,6 @@ const TestimonialCard = ({ quote, author, role, company }) => (
   ];
 
   const latestNews = newsData;
-
-  const blogPosts = blogData;
 
   const testimonials = [
     {
@@ -232,9 +332,8 @@ const TestimonialCard = ({ quote, author, role, company }) => (
               </div>
             </section>
 
-
             {/* Blog Section */}
-            <section className="py-20">
+            <section className="py-20 px-4">
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-12">
                   <h2 className="text-3xl font-bold">From Our Blog</h2>
@@ -242,26 +341,44 @@ const TestimonialCard = ({ quote, author, role, company }) => (
                     View all posts <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {blogPosts.slice(0, 3).map((post, index) => (
-                    <BlogCard key={index} {...post} />
-                  ))}
-                </div>
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="text-gray-400 mt-4">Loading latest blog posts...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {blogPosts.slice(0, 3).map((post, index) => (
+                      <BlogCard key={index} {...post} />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
-            {/* Testimonials Section
+            {/* Documentation Section */}
             <section className="py-20 px-4">
               <div className="max-w-7xl mx-auto">
-                <h2 className="text-3xl font-bold text-center mb-12">What Developers Say</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {testimonials.map((testimonial, index) => (
-                    <TestimonialCard key={index} {...testimonial} />
-                  ))}
+                <div className="flex items-center justify-between mb-12">
+                  <h2 className="text-3xl font-bold">Documentation</h2>
+                  <Link href="/docs" className="text-green-500 hover:text-green-400 flex items-center gap-2">
+                    View all docs <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+                    <p className="text-gray-400 mt-4">Loading documentation...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {docsData.map((doc, index) => (
+                      <DocsCard key={index} {...doc} />
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
-          */}
 
             {/* Code Demo Section */}
             <section className="py-20">
@@ -283,6 +400,7 @@ const TestimonialCard = ({ quote, author, role, company }) => (
                   Ready to Get Started?
                 </h2>
                 <p className="text-gray-400 mb-8">
+                  Join thousands of developers building the next generation of multiplayer games with Horizon.
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Link href="/docs/about">
