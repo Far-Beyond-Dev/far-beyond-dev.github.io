@@ -380,19 +380,6 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Code Demo Section */}
-            <section className="py-20">
-              <div className="max-w-7xl mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center text-white mb-12">
-                  Simple to Implement
-                </h2>
-                <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-neutral-500 text-center font-normal dark:text-neutral-300">
-                  All major features of Horizon are implemented as plugins, making the entire codebase modular and flexable to your needs. Any game-specific functionality is also implemented in the form of a plugin on the server side defining custom events for your game client to call, and interacting with the other server plugins accordingly.
-                </p>
-                <TabsDemo />
-              </div>
-            </section>
-
             {/* CTA Section */}
             <section className="py-20">
               <div className="max-w-4xl mx-auto text-center px-4">
