@@ -126,7 +126,7 @@ export default function Home() {
         </div>
         <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
         <p className="text-gray-400 text-sm">{cleanExcerpt(excerpt)}</p>
-        <Link href={"/blog/"+slug}>
+        <Link href={"/blog/post/"+slug}>
           <button className="mt-4 flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors">
             Read more  <ArrowRight className="w-4 h-4" />
           </button>
@@ -167,7 +167,7 @@ export default function Home() {
         </div>
         <h3 className="text-lg font-semibold mb-2 text-white">{title}</h3>
         <p className="text-gray-400 text-sm">{cleanExcerpt(excerpt)}</p>
-        <Link href={"/docs/"+slug}>
+        <Link href={"/docs/entries/"+slug}>
           <button className="mt-4 flex items-center gap-2 text-green-500 hover:text-green-400 transition-colors">
             Read docs  <ArrowRight className="w-4 h-4" />
           </button>
