@@ -10,7 +10,7 @@ import { ArrowRight, Code, Globe, Shield, Users, Database, Star, BookOpen, FileT
 import { newsData } from '@/lib/news-data';
 
 export default function Home() {
-  const sparklesRef = useRef<HTMLDivElement | null>(null);
+  const sparklesRef = useRef(null);
   const [mounted, setMounted] = useState(false);
   const [blogPosts, setBlogPosts] = useState([]);
   const [docsData, setDocsData] = useState([]);
