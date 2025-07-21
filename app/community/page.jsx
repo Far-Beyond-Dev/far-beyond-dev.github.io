@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import { SparklesCore } from "@/components/ui/sparkles";
 import { Card } from '@/components/ui/card';
 import { 
   Github, MessageCircle, Users, Star, BookOpen,
   Coffee, GitFork, Video, ArrowRight, Loader2,
-  GitCommitHorizontal, AlertTriangle 
+  GitCommitHorizontal, AlertTriangle, Code
 } from "lucide-react";
-import Link from "next/link";
 
 const GITHUB_OWNER = 'Far-Beyond-Dev';
 const GITHUB_REPO = 'Horizon';
@@ -23,9 +24,15 @@ const resources = [
     link: "/docs"
   },
   {
-    title: "Coming Soon!",
-    description: "More resources are coming with the full release",
-    icon: <Video className="w-6 h-6 text-blue-400" />,
+    title: "GitHub Repository",
+    description: "Source code, issues, and contributions",
+    icon: <Github className="w-6 h-6 text-green-400" />,
+    link: "https://github.com/Far-Beyond-Dev/Horizon"
+  },
+  {
+    title: "Coming Soon",
+    description: "More resources coming with the full release",
+    icon: <Video className="w-6 h-6 text-purple-400" />,
     link: ""
   }
 ];
@@ -41,7 +48,7 @@ const showcaseProjects = [
   },
   {
     title: "MMO Starter Kit",
-    author: "Far Beyond Community",
+    author: "Far Beyond Community", 
     description: "Scalable MMO foundation with built-in features",
     stars: 0,
     forks: 0,
@@ -107,6 +114,8 @@ const formatNumber = (num) => {
 };
 
 export default function Community() {
+  const sparklesRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
   const [stats, setStats] = useState({
     stars: 0,
     forks: 0,
@@ -115,6 +124,13 @@ export default function Community() {
     loading: true,
     error: null
   });
+
+  const handleScroll = useCallback(() => {
+    if (!sparklesRef.current) return;
+    const rect = sparklesRef.current.getBoundingClientRect();
+    const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+    sparklesRef.current.style.willChange = isVisible ? 'transform' : 'auto';
+  }, []);
 
   const fetchData = useCallback(async () => {
     const cache = getCache();
@@ -196,295 +212,324 @@ export default function Community() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     fetchData();
     
+    window.addEventListener('scroll', handleScroll, { passive: true });
     const interval = setInterval(() => {
       const cache = getCache();
       if (!cache || (!isCacheValid(cache) && canMakeApiCall(cache))) {
         fetchData();
       }
-    }, 60000); // Check every minute
+    }, 60000);
 
-    return () => clearInterval(interval);
-  }, [fetchData]);
+    return () => {
+      setMounted(false);
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(interval);
+    };
+  }, [fetchData, handleScroll]);
 
   const totalLinesChanged = stats.contributors.reduce((acc, curr) => acc + curr.total_lines, 0);
 
-  const statsItems = [
-    { 
-      label: "GitHub Stars", 
-      value: formatNumber(stats.stars), 
-      icon: <Star className="w-6 h-6" /> 
-    },
-    { 
-      label: "Forks", 
-      value: formatNumber(stats.forks), 
-      icon: <GitFork className="w-6 h-6" /> 
-    },
-    { 
-      label: "Total Commits", 
-      value: formatNumber(stats.totalCommits), 
-      icon: <GitCommitHorizontal className="w-6 h-6" /> 
-    },
-    { 
-      label: "Contributors", 
-      value: formatNumber(stats.contributors.length), 
-      icon: <Users className="w-6 h-6" /> 
-    },
-    {
-      label: "Total Commits",
-      value: formatNumber(totalLinesChanged),
-      icon: <GitCommitHorizontal className="w-6 h-6" />
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-900/20 to-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_50px_at_center,#ffffff08_98%,#3b82f620)] bg-[size:24px_24px]" />
-        <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(to right, #ffffff05 1px, transparent 1px),
-                           linear-gradient(to bottom, #ffffff05 1px, transparent 1px)`,
-          backgroundSize: '44px 44px'
-        }} />
-
-        <div className="absolute left-1/4 -top-24 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-[128px] animate-pulse" />
-        <div className="absolute right-1/4 -top-32 w-96 h-96 bg-purple-500 rounded-full opacity-10 blur-[128px] animate-pulse delay-700" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative text-center">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-            
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
-              Join the Horizon Community
+    <div className="dark min-h-screen flex flex-col">
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="min-h-screen relative flex items-center justify-center overflow-hidden">
+          <div ref={sparklesRef} className="absolute inset-0">
+            {/* {mounted && (
+              <SparklesCore
+                id="community-sparkles"
+                background="transparent"
+                minSize={0.6}
+                maxSize={1.4}
+                particleDensity={30}
+                className="w-full h-full"
+                particleColor="#FFFFFF"
+              />
+            )} */}
+          </div>
+          <div className="relative z-10 min-w-full text-center px-4">
+            <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-80 mb-6">
+              Join the Community
             </h1>
             
-            <div className="w-24 h-1 bg-blue-500/20 mx-auto mb-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-blue-500 animate-[shimmer_2s_infinite]" />
-            </div>
-            
-            <p className="text-xl text-gray-300/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
               Connect with developers, share your projects, and help shape the future of game server development.
             </p>
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {stats.error && (
-            <div className="mb-8">
-              <div className="flex items-center gap-2 text-yellow-400 bg-yellow-400/10 rounded-lg p-4">
-                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                <span>{stats.error}</span>
-              </div>
+            <div className="flex gap-4 justify-center">
+              <a 
+                href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2"
+              >
+                <Github className="w-4 h-4" /> View on GitHub
+              </a>
+              <Link href="/docs">
+                <button className="px-6 py-3 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
+                  View Documentation <Code className="w-4 h-4" />
+                </button>
+              </Link>
             </div>
-          )}
+          </div>
+        </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            {statsItems.map((stat, index) => (
-              <div key={index} className="flex items-center justify-center">
-                <div className="text-center">
-                  <div className="flex justify-center mb-4 text-gray-400">
-                    {stat.icon}
+        {mounted && (
+          <>
+            {/* Stats Section */}
+            <section className="py-20 px-4">
+              <div className="max-w-7xl mx-auto">
+                {stats.error && (
+                  <div className="mb-12 text-center">
+                    <div className="inline-flex items-center gap-2 text-orange-400 bg-orange-500/10 rounded-lg p-4 border border-orange-500/20">
+                      <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                      <span>{stats.error}</span>
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-white mb-2">
-                    {stats.loading ? (
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                    ) : (
-                      stat.value
-                    )}
-                  </div>
-                  <div className="text-gray-400">
-                    {stat.label}
+                )}
+
+                <h4 className="text-3xl lg:text-5xl lg:leading-tight max-w-5xl mx-auto text-center tracking-tight font-medium text-black dark:text-white">
+                  Built by the Community
+                </h4>
+                <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-neutral-500 text-center font-normal dark:text-neutral-300">
+                  Horizon is developed openly with contributions from developers around the world.
+                </p>
+
+                <div className="max-w-7xl mx-auto mt-20 px-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-blue-500 mb-2">
+                        {stats.loading ? (
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+                        ) : (
+                          formatNumber(stats.stars)
+                        )}
+                      </div>
+                      <div className="text-gray-400 flex items-center justify-center gap-2">
+                        <Star className="w-4 h-4" />
+                        GitHub Stars
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-green-500 mb-2">
+                        {stats.loading ? (
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+                        ) : (
+                          formatNumber(stats.forks)
+                        )}
+                      </div>
+                      <div className="text-gray-400 flex items-center justify-center gap-2">
+                        <GitFork className="w-4 h-4" />
+                        Forks
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-purple-500 mb-2">
+                        {stats.loading ? (
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+                        ) : (
+                          formatNumber(stats.contributors.length)
+                        )}
+                      </div>
+                      <div className="text-gray-400 flex items-center justify-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Contributors
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-orange-500 mb-2">
+                        {stats.loading ? (
+                          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+                        ) : (
+                          formatNumber(totalLinesChanged)
+                        )}
+                      </div>
+                      <div className="text-gray-400 flex items-center justify-center gap-2">
+                        <GitCommitHorizontal className="w-4 h-4" />
+                        Total Commits
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </section>
 
-      {/* Contributors Section */}
-      <section className="py-20 bg-black" id="contributors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">
-            Top Contributors
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {stats.loading ? (
-              Array(6).fill(0).map((_, index) => (
-                <Card key={index} className="p-6 transition-all duration-300">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-800 animate-pulse" />
-                    <div className="flex-1">
-                      <div className="h-5 bg-gray-800 rounded w-1/2 mb-2 animate-pulse" />
-                      <div className="h-4 bg-gray-800 rounded w-3/4 animate-pulse" />
-                    </div>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              stats.contributors.map((contributor) => (
-                <a 
-                  key={contributor.login}
-                  href={contributor.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block group"
-                >
-                  <Card className="p-6 transition-all duration-300 transform hover:-translate-y-1 hover:bg-gray-800/50">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={contributor.avatar_url}
-                        alt={contributor.login}
-                        className="w-12 h-12 rounded-full ring-2 ring-gray-800 group-hover:ring-blue-500 transition-all"
-                        loading="lazy"
-                      />
-                      <div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
-                          {contributor.login}
-                        </h3>
-                        <div className="mt-2 flex items-center gap-2 text-gray-400">
-                          <Coffee className="w-4 h-4" />
-                          <span>{formatNumber(contributor.total_lines)} commits</span>
+            {/* Contributors Section */}
+            <section className="py-20 px-4">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold text-center mb-4">Top Contributors</h2>
+                <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
+                  Meet the developers who are building the future of game server technology.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {stats.loading ? (
+                    Array(6).fill(0).map((_, index) => (
+                      <Card key={index} className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-gray-800 animate-pulse" />
+                          <div className="flex-1">
+                            <div className="h-5 bg-gray-800 rounded w-1/2 mb-2 animate-pulse" />
+                            <div className="h-4 bg-gray-800 rounded w-3/4 animate-pulse" />
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </Card>
-                </a>
-              ))
-            )}
-          </div>
-          
-          {!stats.loading && (
-            <div className="text-center mt-12">
-              <a
-                href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/graphs/contributors`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                View all contributors <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Resources Section */}
-      <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">
-            Community Resources
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {resources.map((resource, index) => (
-              <Link
-                key={index}
-                href={resource.link}
-                className={`block ${!resource.link && 'pointer-events-none'}`}
-              >
-                <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
-                  <div className="mb-4">
-                    {resource.icon}
+                      </Card>
+                    ))
+                  ) : (
+                    stats.contributors.map((contributor) => (
+                      <a 
+                        key={contributor.login}
+                        href={contributor.html_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block group"
+                      >
+                        <Card className="p-6 transition-all duration-300 hover:bg-gray-800/50">
+                          <div className="flex items-center gap-4">
+                            <img
+                              src={contributor.avatar_url}
+                              alt={contributor.login}
+                              className="w-12 h-12 rounded-full ring-2 ring-gray-800 group-hover:ring-blue-500 transition-all"
+                              loading="lazy"
+                            />
+                            <div>
+                              <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors">
+                                {contributor.login}
+                              </h3>
+                              <div className="mt-2 flex items-center gap-2 text-gray-400">
+                                <Coffee className="w-4 h-4" />
+                                <span>{formatNumber(contributor.total_lines)} commits</span>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      </a>
+                    ))
+                  )}
+                </div>
+                
+                {!stats.loading && (
+                  <div className="text-center mt-12">
+                    <a
+                      href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/graphs/contributors`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      View all contributors <ArrowRight className="w-4 h-4" />
+                    </a>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {resource.title}
-                  </h3>
-                  <p className="text-gray-400">
-                    {resource.description}
-                  </p>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+                )}
+              </div>
+            </section>
 
-      {/* Showcase Section */}
-      <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">
-            Community Showcase
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {showcaseProjects.map((project, index) => (
-              <Link 
-                key={index}
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-400 mb-4">
-                    by {project.author}
-                  </p>
-                  <p className="text-gray-300 mb-6">
-                    {project.description}
-                  </p>
-                  <div className="flex items-center gap-6 text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4" />
-                      <span>{project.stars}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GitFork className="w-4 h-4" />
-                      <span>{project.forks}</span>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+            {/* Resources Section */}
+            <section className="py-20 px-4">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold text-center mb-4">Community Resources</h2>
+                <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
+                  Everything you need to get started with Horizon development.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {resources.map((resource, index) => (
+                    <Link
+                      key={index}
+                      href={resource.link}
+                      className={`block ${!resource.link && 'pointer-events-none'}`}
+                    >
+                      <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
+                        <div className="mb-4">
+                          {resource.icon}
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          {resource.title}
+                        </h3>
+                        <p className="text-gray-400">
+                          {resource.description}
+                        </p>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </section>
 
-      {/* Call to Action Section */}
-      <section className="py-20 bg-black">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            Start Contributing Today
-          </h2>
-          <p className="text-gray-300 mb-8">
-            Whether you're fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors"
-            >
-              <Github className="w-5 h-5" /> View on GitHub
-            </a>
-            <button
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white transition-colors"
-            >
-              <MessageCircle className="w-5 h-5" /> Join Discussion
-            </button>
-          </div>
-        </div>
-      </section>
+            {/* Showcase Section */}
+            <section className="py-20 px-4">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold text-center mb-4">Community Showcase</h2>
+                <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
+                  Discover projects built by the Horizon community.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {showcaseProjects.map((project, index) => (
+                    <a 
+                      key={index}
+                      href={project.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Card className="p-6 h-full transition-colors hover:bg-gray-800/50">
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          {project.title}
+                        </h3>
+                        <p className="text-gray-400 mb-4 text-sm">
+                          by {project.author}
+                        </p>
+                        <p className="text-gray-300 mb-6">
+                          {project.description}
+                        </p>
+                        <div className="flex items-center gap-6 text-gray-400 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Star className="w-4 h-4" />
+                            <span>{project.stars}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <GitFork className="w-4 h-4" />
+                            <span>{project.forks}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </section>
 
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%) }
-          100% { transform: translateX(100%) }
-        }
-        @keyframes float {
-          0% { transform: translate(0, 0) }
-          50% { transform: translate(100px, -100px) rotate(180deg) }
-          100% { transform: translate(0, 0) }
-        }
-      `}</style>
+            {/* CTA Section */}
+            <section className="py-20">
+              <div className="max-w-4xl mx-auto text-center px-4">
+                <h2 className="text-3xl font-bold text-white mb-6">
+                  Start Contributing Today
+                </h2>
+                <p className="text-gray-400 mb-8">
+                  Whether you're fixing bugs, improving documentation, or sharing your projects, every contribution makes Horizon better for everyone.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <a 
+                    href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-colors flex items-center gap-2"
+                  >
+                    <Github className="w-5 h-5" /> View on GitHub
+                  </a>
+                  <Link href="/docs">
+                    <button className="px-8 py-4 border border-gray-700 hover:border-gray-600 rounded-lg text-gray-300 transition-colors flex items-center gap-2">
+                      Read Documentation <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+      </main>
     </div>
   );
 }

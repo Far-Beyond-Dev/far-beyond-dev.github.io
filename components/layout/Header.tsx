@@ -33,21 +33,24 @@ export const Header = () => {
             <Link href="/community" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Community
             </Link>
-            <Link href="/enterprise" className="text-neutral-300 hover:text-neutral-100 transition-colors">
-              Enterprise
+            <Link href="/blog" className="text-neutral-300 hover:text-neutral-100 transition-colors">
+              Blog
+            </Link>
+            <Link href="/atlas" className="text-neutral-300 hover:text-neutral-100 transition-colors">
+              Atlas
             </Link>
             <Link href="/docs" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Documentation
             </Link>
-            <Link href="/news" className="text-neutral-300 hover:text-neutral-100 transition-colors">
-              News
-            </Link>
-            <Link href="/blog" className="text-neutral-300 hover:text-neutral-100 transition-colors">
-              Blog
-            </Link>
             <Link href="https://pulsar.farbeyond.dev/" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Pulsar
             </Link>
+            <span className="text-neutral-500 cursor-not-allowed" title="Coming soon">
+              SaaS (Planned)
+            </span>
+            {/* <span className="text-neutral-500 cursor-not-allowed" title="Coming soon">
+              News (Planned)
+            </span> */}
           </div>
 
           {/* Call to Action Buttons */}
