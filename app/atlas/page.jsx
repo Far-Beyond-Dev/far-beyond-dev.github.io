@@ -447,7 +447,7 @@ export default function Atlas() {
                       </div>
                       <div className="flex justify-between items-center py-2 px-3 bg-gray-800/30 rounded">
                         <span className="text-sm text-gray-300">Recommended Ratio</span>
-                        <span className="text-sm text-orange-400">1:10 Atlas:Server</span>
+                        <span className="text-sm text-orange-400">20:10 Atlas:Server</span>
                       </div>
                     </div>
                   </Card>
