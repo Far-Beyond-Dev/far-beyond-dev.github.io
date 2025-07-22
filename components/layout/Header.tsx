@@ -8,7 +8,7 @@ const baseUrl = "https://horizon.farbeyond.dev/"; // Set your base URL here
 
 const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link
-    href={href.startsWith("http") ? href : baseUrl + href.replace(/^\//, "")}
+    href={href.startsWith("http") ? href : `/${href.replace(/^\//, "")}`}
     className="block px-3 py-2 text-base font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-md transition-colors"
   >
     {children}
@@ -31,16 +31,16 @@ export const Header = () => {
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href={baseUrl + "community"} className="text-neutral-300 hover:text-neutral-100 transition-colors">
+            <Link href="/community" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Community
             </Link>
-            <Link href={baseUrl + "blog"} className="text-neutral-300 hover:text-neutral-100 transition-colors">
+            <Link href="/blog" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Blog
             </Link>
-            <Link href={baseUrl + "atlas"} className="text-neutral-300 hover:text-neutral-100 transition-colors">
+            <Link href="/atlas" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Atlas
             </Link>
-            <Link href={baseUrl + "docs"} className="text-neutral-300 hover:text-neutral-100 transition-colors">
+            <Link href="/docs" className="text-neutral-300 hover:text-neutral-100 transition-colors">
               Documentation
             </Link>
             <Link href="https://pulsar.farbeyond.dev/" className="text-neutral-300 hover:text-neutral-100 transition-colors">
@@ -61,7 +61,7 @@ export const Header = () => {
             >
               <IconBrandGithub className="w-5 h-5" />
             </Link>
-            <Link href={baseUrl + "docs/about"}>
+            <Link href="/docs/about">
               <button className="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-neutral-100 rounded-lg transition-all">
                 Get Started
               </button>
