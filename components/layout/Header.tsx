@@ -8,7 +8,7 @@ const baseUrl = "https://horizon.farbeyond.dev/"; // Set your base URL here
 
 const MobileNavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link
-    href={href.startsWith("http") ? href : `/${href.replace(/^\//, "")}`}
+    href={href.startsWith("http") ? href : baseUrl + href.replace(/^\//, "")}
     className="block px-3 py-2 text-base font-medium text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-md transition-colors"
   >
     {children}
